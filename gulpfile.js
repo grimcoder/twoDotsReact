@@ -23,6 +23,11 @@ gulp.task('js-development', function () {
 
 
 gulp.task('html-development', function () {
+
+     gulp
+        .src('./src/*.css')
+        .pipe(gulp.dest('./build'));
+
     return gulp
         .src('./src/*.html')
         .pipe(gulp.dest('./build'));
@@ -65,6 +70,7 @@ gulp.task('watch', function () {
     gulp.watch('./src/ts/**/*.ts', ['ts-development','js-development']);
     gulp.watch('./src/ts/**/*.tsx', ['ts-development','js-development']);
     gulp.watch('./src/**/*.html', ['html-development']);
+    gulp.watch('./src/**/*.css', ['html-development']);
 });
 
 

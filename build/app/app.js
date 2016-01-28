@@ -19028,11 +19028,32 @@ module.exports = require('./lib/React');
 /// <reference path='../typings/tsd.d.ts'/>
 var React = require('react');
 var ReactDOM = require('react-dom');
+var size = [5, 5];
 var Hello = React.createClass({displayName: "Hello",
+    handleMouseDown: function (row, coll) {
+        console.log('row: ' + row);
+        console.log('coll: ' + coll);
+    },
     render: function () {
-        return React.createElement("div", null, "Hello ", this.props.name);
+        var _this = this;
+        return React.createElement("table", null, 
+
+                React.createElement("tbody", null, 
+
+                    Array.apply(0, Array(5)).map(function (el, row) {
+            return React.createElement("tr", {key: row}, 
+
+                        Array.apply(0, Array(5)).map(function (el1, coll) {
+                return React.createElement("td", {key: coll, onMouseDown: _this.handleMouseDown.bind(null, row, coll)});
+            })
+                    );
+        })
+
+                )
+
+            );
     }
 });
-ReactDOM.render(React.createElement(Hello, {name: "World"}), document.getElementById('container'));
+ReactDOM.render(React.createElement(Hello, {name: "World", width: "5", height: "5"}), document.getElementById('container'));
 
 },{"react":158,"react-dom":2}]},{},[159]);
