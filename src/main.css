@@ -14,3 +14,12 @@ tr{
     border-collapse: collapse;
     height: 40px;
 }
+
+.selected{
+    background-color: beige;
+}
+
+.unselected{
+    background-color: white;
+
+}

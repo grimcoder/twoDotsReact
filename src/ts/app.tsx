@@ -23,31 +23,101 @@ interface HelloWorldProps {
     height: string;
 }
 
-var size:[number] = [5, 5]
+class  Cell {
+    className: String = 'unselected';
+}
+
+class Size{
+    public static Width: number = 10
+    public static Height: number = 5
+}
+
+var Grid: Cell[][] = [];
+
+Array.apply(0, Array(Size.Height)).map((el, row) =>
+{
+    Grid[row] = [];
+        Array.apply(0, Array(Size.Width)).map((el1, col) =>
+        {
+            var cell = new Cell();
+            Grid[row][col] = new Cell();
+        });
+});
+
+
 var Hello = React.createClass<HelloWorldProps, any>(
     {
-        handleMouseDown: function(row, coll){
-            console.log('row: ' + row)
-            console.log('coll: ' + coll)
+        startDrag: false,
+
+        getInitialState: function() {
+            return {
+                Grid: Grid
+            }
         },
-        render: function () {
 
-            return <table>
+        onMouseLeave: function(){
+            this.startDrag = false
+            Grid.map((elem, i)=>{
+                elem.map((cell: Cell, n)=>{
+                    cell.className = 'unselected'
+                })
+            })
+            this.setState({
+                Grid: Grid
+            });
+        },
+        handleMouseUp: function(){
+            this.startDrag = false
 
+            Grid.map((elem, i)=>{
+                elem.map((cell: Cell, n)=>{
+                    cell.className = 'unselected'
+                })
+            })
+            this.setState({
+                Grid: Grid
+            });
+
+        },
+
+        handleMouseOver: function(row, col, event){
+            if (!this.startDrag) return
+            Grid[row][col].className = 'selected';
+            this.setState({
+                Grid: Grid
+            });
+            console.log('handleMouseOver')
+        },
+
+        handleMouseDown: function(row, col){
+            this.startDrag = true
+            Grid[row][col].className = 'selected';
+            this.setState({
+                Grid: Grid
+            });
+        },
+
+        render:  function(){
+
+            return <table onMouseLeave={this.onMouseLeave}>
                 <tbody>
-
-                    {Array.apply(0, Array(5)).map((el, row) =>
+                    {Array.apply(0, Array(Size.Height)).map((el, row) =>
                     <tr key={row}>
 
-                        {Array.apply(0, Array(5)).map((el1, coll) =>
-                            <td key={coll}  onMouseDown={this.handleMouseDown.bind(null, row, coll)}></td>
+                        {Array.apply(0, Array(Size.Width)).map((el1, coll) =>
+
+                            <td key={coll} className={this.state.Grid[row][coll].className}
+
+                                onMouseUp={this.handleMouseUp} onMouseOver={this.handleMouseOver.bind(null, row, coll, event)}
+
+                                onMouseDown={this.handleMouseDown.bind(null, row, coll)}></td>
+
                             )}
                     </tr>
 
                         )}
 
                 </tbody>
-
             </table>;
         }
 

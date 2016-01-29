@@ -19028,29 +19028,86 @@ module.exports = require('./lib/React');
 /// <reference path='../typings/tsd.d.ts'/>
 var React = require('react');
 var ReactDOM = require('react-dom');
-var size = [5, 5];
+var Cell = (function () {
+    function Cell() {
+        this.className = 'unselected';
+    }
+    return Cell;
+})();
+var Size = (function () {
+    function Size() {
+    }
+    Size.Width = 10;
+    Size.Height = 5;
+    return Size;
+})();
+var Grid = [];
+Array.apply(0, Array(Size.Height)).map(function (el, row) {
+    Grid[row] = [];
+    Array.apply(0, Array(Size.Width)).map(function (el1, col) {
+        var cell = new Cell();
+        Grid[row][col] = new Cell();
+    });
+});
 var Hello = React.createClass({displayName: "Hello",
-    handleMouseDown: function (row, coll) {
-        console.log('row: ' + row);
-        console.log('coll: ' + coll);
+    startDrag: false,
+    getInitialState: function () {
+        return {
+            Grid: Grid
+        };
+    },
+    onMouseLeave: function () {
+        this.startDrag = false;
+        Grid.map(function (elem, i) {
+            elem.map(function (cell, n) {
+                cell.className = 'unselected';
+            });
+        });
+        this.setState({
+            Grid: Grid
+        });
+    },
+    handleMouseUp: function () {
+        this.startDrag = false;
+        Grid.map(function (elem, i) {
+            elem.map(function (cell, n) {
+                cell.className = 'unselected';
+            });
+        });
+        this.setState({
+            Grid: Grid
+        });
+    },
+    handleMouseOver: function (row, col, event) {
+        if (!this.startDrag)
+            return;
+        Grid[row][col].className = 'selected';
+        this.setState({
+            Grid: Grid
+        });
+        console.log('handleMouseOver');
+    },
+    handleMouseDown: function (row, col) {
+        this.startDrag = true;
+        Grid[row][col].className = 'selected';
+        this.setState({
+            Grid: Grid
+        });
     },
     render: function () {
         var _this = this;
-        return React.createElement("table", null, 
-
+        return React.createElement("table", {onMouseLeave: this.onMouseLeave}, 
                 React.createElement("tbody", null, 
-
-                    Array.apply(0, Array(5)).map(function (el, row) {
+                    Array.apply(0, Array(Size.Height)).map(function (el, row) {
             return React.createElement("tr", {key: row}, 
 
-                        Array.apply(0, Array(5)).map(function (el1, coll) {
-                return React.createElement("td", {key: coll, onMouseDown: _this.handleMouseDown.bind(null, row, coll)});
+                        Array.apply(0, Array(Size.Width)).map(function (el1, coll) {
+                return React.createElement("td", {key: coll, className: _this.state.Grid[row][coll].className, onMouseUp: _this.handleMouseUp, onMouseOver: _this.handleMouseOver.bind(null, row, coll, event), onMouseDown: _this.handleMouseDown.bind(null, row, coll)});
             })
                     );
         })
 
                 )
-
             );
     }
 });
