@@ -16,10 +16,50 @@ tr{
 }
 
 .selected{
-    background-color: beige;
+    background-color: rosybrown;
 }
 
 .unselected{
-    background-color: white;
+    background-color: antiquewhite;
+
+}
+
+.red {
+    position: relative;
+    background-color: red;
+    width: 15px;
+    height: 15px;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%);
+    border-radius: 15px;
+    padding: 4px;
+
+}
+.yellow {
+    position: relative;
+    background-color: yellow;
+    width: 15px;
+    height: 15px;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%);
+    border-radius: 15px;
+    padding: 4px;
+
+}
+.brown {
+    position: relative;
+    background-color: brown;
+    width: 15px;
+    height: 15px;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%);
+    border-radius: 15px;
+    padding: 4px;
 
 }

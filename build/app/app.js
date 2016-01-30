@@ -19028,81 +19028,124 @@ module.exports = require('./lib/React');
 /// <reference path='../typings/tsd.d.ts'/>
 var React = require('react');
 var ReactDOM = require('react-dom');
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min)) + min;
+}
+function sleep(milliseconds) {
+    var start = new Date().getTime();
+    for (var i = 0; i < 1e7; i++) {
+        if ((new Date().getTime() - start) > milliseconds) {
+            break;
+        }
+    }
+}
+var getRandomColor = function (colors) {
+    return colors[getRandomInt(0, colors.length)];
+};
 var Cell = (function () {
-    function Cell() {
+    function Cell(x, y) {
         this.className = 'unselected';
+        this.color = getRandomColor(['red', 'yellow', 'brown']);
+        this.x = x;
+        this.y = y;
     }
     return Cell;
 })();
-var Size = (function () {
-    function Size() {
+var GridState = (function () {
+    function GridState(width, height) {
+        var _this = this;
+        this.width = width;
+        this.height = height;
+        this.Grid = [];
+        this.startDrag = false;
+        Array.apply(0, Array(height)).map(function (el, row) {
+            _this.Grid[row] = [];
+            Array.apply(0, Array(width)).map(function (el1, col) {
+                _this.Grid[row][col] = new Cell(col, row);
+            });
+        });
     }
-    Size.Width = 10;
-    Size.Height = 5;
-    return Size;
+    return GridState;
 })();
-var Grid = [];
-Array.apply(0, Array(Size.Height)).map(function (el, row) {
-    Grid[row] = [];
-    Array.apply(0, Array(Size.Width)).map(function (el1, col) {
-        var cell = new Cell();
-        Grid[row][col] = new Cell();
-    });
-});
 var Hello = React.createClass({displayName: "Hello",
-    startDrag: false,
     getInitialState: function () {
-        return {
-            Grid: Grid
-        };
+        return new GridState(Number(this.props.width), Number(this.props.height));
+    },
+    removeDots: function (state) {
+        var flatCells = [].concat.apply([], state.Grid);
+        if (flatCells.filter(function (e) {
+            return e.className == 'selected';
+        })
+            .length < 2) {
+            return;
+        }
+        for (var i = state.height - 1; i >= 0; i--) {
+            var emptyCells = state.Grid[i].filter(function (e) {
+                return e.className == 'selected';
+            });
+            if (emptyCells.length == 0)
+                continue;
+            for (var x = 0; x < state.width; x++) {
+                if (state.Grid[i][x].className == 'selected') {
+                    //shift down
+                    for (var n = i; n > 0; n--) {
+                        var cellAbove = state.Grid[n - 1][x];
+                        state.Grid[n][x].color = cellAbove.color;
+                        state.Grid[n][x].className = cellAbove.className;
+                    }
+                    state.Grid[0][x] = new Cell(x, 0);
+                }
+            }
+            i++;
+        }
     },
     onMouseLeave: function () {
-        this.startDrag = false;
-        Grid.map(function (elem, i) {
+        this.state.startDrag = false;
+        this.state.Grid.map(function (elem, i) {
             elem.map(function (cell, n) {
                 cell.className = 'unselected';
             });
         });
-        this.setState({
-            Grid: Grid
-        });
+        this.setState(this.state);
     },
     handleMouseUp: function () {
-        this.startDrag = false;
-        Grid.map(function (elem, i) {
-            elem.map(function (cell, n) {
-                cell.className = 'unselected';
-            });
-        });
-        this.setState({
-            Grid: Grid
-        });
+        this.state.startDrag = false;
+        this.removeDots(this.state);
+        this.setState(this.state);
     },
     handleMouseOver: function (row, col, event) {
-        if (!this.startDrag)
+        var thisCell = this.state.Grid[row][col];
+        if (!this.state.startDrag ||
+            thisCell.color != this.state.lastCell.color ||
+            Math.abs(this.state.lastCell.x - thisCell.x) +
+                Math.abs(this.state.lastCell.y - thisCell.y) > 1)
             return;
-        Grid[row][col].className = 'selected';
-        this.setState({
-            Grid: Grid
-        });
-        console.log('handleMouseOver');
+        if (thisCell.className == 'selected') {
+            this.state.lastCell.className = 'unselected';
+        }
+        this.state.lastCell = thisCell;
+        thisCell.className = 'selected';
+        this.setState(this.state);
     },
     handleMouseDown: function (row, col) {
-        this.startDrag = true;
-        Grid[row][col].className = 'selected';
-        this.setState({
-            Grid: Grid
-        });
+        this.state.startDrag = true;
+        this.state.lastCell = this.state.Grid[row][col];
+        this.state.Grid[row][col].className = 'selected';
+        this.setState(this.state);
     },
     render: function () {
         var _this = this;
         return React.createElement("table", {onMouseLeave: this.onMouseLeave}, 
                 React.createElement("tbody", null, 
-                    Array.apply(0, Array(Size.Height)).map(function (el, row) {
+                    Array.apply(0, Array(this.state.height)).map(function (el, row) {
             return React.createElement("tr", {key: row}, 
 
-                        Array.apply(0, Array(Size.Width)).map(function (el1, coll) {
-                return React.createElement("td", {key: coll, className: _this.state.Grid[row][coll].className, onMouseUp: _this.handleMouseUp, onMouseOver: _this.handleMouseOver.bind(null, row, coll, event), onMouseDown: _this.handleMouseDown.bind(null, row, coll)});
+                        Array.apply(0, Array(_this.state.width)).map(function (el1, coll) {
+                return React.createElement("td", {key: coll, className: _this.state.Grid[row][coll].className, onMouseUp: _this.handleMouseUp, onMouseOver: _this.handleMouseOver.bind(null, row, coll, event), onMouseDown: _this.handleMouseDown.bind(null, row, coll)}, 
+
+                            React.createElement("div", {className: _this.state.Grid[row][coll].color})
+
+                        );
             })
                     );
         })

@@ -15,6 +15,7 @@ import {
     connect,
     Provider
 } from 'react-redux';
+
 import { Action } from 'redux-actions';
 
 interface HelloWorldProps {
@@ -23,94 +24,155 @@ interface HelloWorldProps {
     height: string;
 }
 
-class  Cell {
-    className: String = 'unselected';
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min)) + min;
 }
 
-class Size{
-    public static Width: number = 10
-    public static Height: number = 5
+function sleep(milliseconds) {
+    var start = new Date().getTime();
+    for (var i = 0; i < 1e7; i++) {
+        if ((new Date().getTime() - start) > milliseconds){
+            break;
+        }
+    }
 }
 
-var Grid: Cell[][] = [];
+var getRandomColor = (colors:[String]):String => {
+    return colors[getRandomInt(0, colors.length)];
+}
 
-Array.apply(0, Array(Size.Height)).map((el, row) =>
-{
-    Grid[row] = [];
-        Array.apply(0, Array(Size.Width)).map((el1, col) =>
-        {
-            var cell = new Cell();
-            Grid[row][col] = new Cell();
+
+class Cell {
+    className:String = 'unselected';
+    color:String = getRandomColor(['red', 'yellow', 'brown']);
+    x:number
+    y:number
+
+    constructor(x:number, y:number) {
+        this.x = x
+        this.y = y
+    }
+}
+
+
+class GridState {
+    Grid:Cell[][] = []
+    startDrag:boolean = false
+
+    lastCell:Cell
+
+    constructor(public width, public height) {
+        Array.apply(0, Array(height)).map((el, row) => {
+            this.Grid[row] = [];
+            Array.apply(0, Array(width)).map((el1, col) => {
+                this.Grid[row][col] = new Cell(col, row);
+            });
         });
-});
+    }
+}
 
 
-var Hello = React.createClass<HelloWorldProps, any>(
+var Hello = React.createClass<HelloWorldProps, GridState>(
     {
-        startDrag: false,
 
-        getInitialState: function() {
-            return {
-                Grid: Grid
+        getInitialState: function () {
+            return new GridState(Number(this.props.width), Number(this.props.height));
+        },
+
+        removeDots: function (state:GridState):void {
+            var flatCells = [].concat.apply([], state.Grid);
+            if (flatCells.filter((e)=> {
+                    return e.className == 'selected'
+                })
+                    .length < 2) {
+                return
+            }
+            for (var i = state.height - 1; i >= 0; i--) {
+
+                var emptyCells = state.Grid[i].filter((e)=> {
+                    return e.className == 'selected'
+                });
+
+                if (emptyCells.length == 0) continue;
+                for(var x : number = 0; x < state.width; x++){
+                    if (state.Grid[i][x].className == 'selected') {
+                        //shift down
+                        for (var n:number = i; n > 0; n--) {
+                            var cellAbove = state.Grid[n-1][x]
+                            state.Grid[n][x].color = cellAbove.color
+                            state.Grid[n][x].className = cellAbove.className
+                        }
+                        state.Grid[0][x] = new Cell(x, 0)
+                    }
+                }
+                i++;
             }
         },
 
-        onMouseLeave: function(){
-            this.startDrag = false
-            Grid.map((elem, i)=>{
-                elem.map((cell: Cell, n)=>{
+        onMouseLeave: function () {
+            this.state.startDrag = false
+            this.state.Grid.map((elem, i)=> {
+                elem.map((cell:Cell, n)=> {
                     cell.className = 'unselected'
                 })
             })
-            this.setState({
-                Grid: Grid
-            });
+            this.setState(this.state);
         },
-        handleMouseUp: function(){
-            this.startDrag = false
 
-            Grid.map((elem, i)=>{
-                elem.map((cell: Cell, n)=>{
-                    cell.className = 'unselected'
-                })
-            })
-            this.setState({
-                Grid: Grid
-            });
+        handleMouseUp: function () {
+
+            this.state.startDrag = false
+
+            this.removeDots(this.state);
+            this.setState(this.state);
+
 
         },
 
-        handleMouseOver: function(row, col, event){
-            if (!this.startDrag) return
-            Grid[row][col].className = 'selected';
-            this.setState({
-                Grid: Grid
-            });
-            console.log('handleMouseOver')
+        handleMouseOver: function (row, col, event) {
+            var thisCell = this.state.Grid[row][col];
+            if (!this.state.startDrag ||
+                thisCell.color != this.state.lastCell.color ||
+                Math.abs(this.state.lastCell.x - thisCell.x) +
+                Math.abs(this.state.lastCell.y - thisCell.y) > 1
+            ) return
+
+            if (thisCell.className == 'selected') {
+                this.state.lastCell.className = 'unselected'
+            }
+
+            this.state.lastCell = thisCell
+            thisCell.className = 'selected';
+            this.setState(this.state);
         },
 
-        handleMouseDown: function(row, col){
-            this.startDrag = true
-            Grid[row][col].className = 'selected';
-            this.setState({
-                Grid: Grid
-            });
+        handleMouseDown: function (row, col) {
+            this.state.startDrag = true
+            this.state.lastCell = this.state.Grid[row][col]
+
+            this.state.Grid[row][col].className = 'selected';
+            this.setState(this.state);
         },
 
-        render:  function(){
+        render: function () {
 
             return <table onMouseLeave={this.onMouseLeave}>
                 <tbody>
-                    {Array.apply(0, Array(Size.Height)).map((el, row) =>
+                    {Array.apply(0, Array(this.state.height)).map((el, row) =>
                     <tr key={row}>
 
-                        {Array.apply(0, Array(Size.Width)).map((el1, coll) =>
+                        {Array.apply(0, Array(this.state.width)).map((el1, coll) =>
 
-                            <td key={coll} className={this.state.Grid[row][coll].className}
+                        <td key={coll} className={this.state.Grid[row][coll].className}
 
-                                onMouseUp={this.handleMouseUp} onMouseOver={this.handleMouseOver.bind(null, row, coll, event)}
+                            onMouseUp={this.handleMouseUp}
+                            onMouseOver={this.handleMouseOver.bind(null, row, coll, event)}
 
-                                onMouseDown={this.handleMouseDown.bind(null, row, coll)}></td>
+                            onMouseDown={this.handleMouseDown.bind(null, row, coll)}>
+
+                            <div className={this.state.Grid[row][coll].color}></div>
+
+                        </td>
 
                             )}
                     </tr>
