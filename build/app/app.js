@@ -19028,6 +19028,7 @@ module.exports = require('./lib/React');
 /// <reference path='../typings/tsd.d.ts'/>
 var React = require('react');
 var ReactDOM = require('react-dom');
+var scoreTable_1 = require('./scoreTable');
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min)) + min;
 }
@@ -19051,13 +19052,18 @@ var Cell = (function () {
     }
     return Cell;
 })();
-var GridState = (function () {
-    function GridState(width, height) {
+var TwoDotsState = (function () {
+    function TwoDotsState(width, height) {
         var _this = this;
         this.width = width;
         this.height = height;
         this.Grid = [];
         this.startDrag = false;
+        this.score = {
+            'red': 0,
+            'yellow': 0,
+            'brown': 0
+        };
         Array.apply(0, Array(height)).map(function (el, row) {
             _this.Grid[row] = [];
             Array.apply(0, Array(width)).map(function (el1, col) {
@@ -19065,19 +19071,22 @@ var GridState = (function () {
             });
         });
     }
-    return GridState;
+    return TwoDotsState;
 })();
 var Hello = React.createClass({displayName: "Hello",
     getInitialState: function () {
-        return new GridState(Number(this.props.width), Number(this.props.height));
+        return new TwoDotsState(Number(this.props.width), Number(this.props.height));
     },
     removeDots: function (state) {
         var flatCells = [].concat.apply([], state.Grid);
-        if (flatCells.filter(function (e) {
+        var selectedCells = flatCells.filter(function (e) {
             return e.className == 'selected';
-        })
-            .length < 2) {
+        });
+        if (selectedCells.length < 2) {
             return;
+        }
+        else {
+            state.score[selectedCells[0].color] += selectedCells.length;
         }
         for (var i = state.height - 1; i >= 0; i--) {
             var emptyCells = state.Grid[i].filter(function (e) {
@@ -19135,7 +19144,9 @@ var Hello = React.createClass({displayName: "Hello",
     },
     render: function () {
         var _this = this;
-        return React.createElement("table", {onMouseLeave: this.onMouseLeave}, 
+        var state = this.state;
+        return React.createElement("div", null, 
+                React.createElement("table", {onMouseLeave: this.onMouseLeave}, 
                 React.createElement("tbody", null, 
                     Array.apply(0, Array(this.state.height)).map(function (el, row) {
             return React.createElement("tr", {key: row}, 
@@ -19151,9 +19162,42 @@ var Hello = React.createClass({displayName: "Hello",
         })
 
                 )
+            ), 
+                React.createElement(scoreTable_1.default, {score: state.score})
             );
     }
 });
 ReactDOM.render(React.createElement(Hello, {name: "World", width: "5", height: "5"}), document.getElementById('container'));
 
-},{"react":158,"react-dom":2}]},{},[159]);
+},{"./scoreTable":160,"react":158,"react-dom":2}],160:[function(require,module,exports){
+/**
+ * Created by taraskovtun on 1/29/16.
+ */
+/// <reference path='../typings/tsd.d.ts'/>
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var React = require('react');
+var ScoreTable = (function (_super) {
+    __extends(ScoreTable, _super);
+    function ScoreTable() {
+        _super.apply(this, arguments);
+    }
+    ScoreTable.prototype.render = function () {
+        var score = this.props.score;
+        return (React.createElement("div", null, 
+                Object.keys(score).map(function (key) {
+            return React.createElement("div", {key: key}, 
+                        key, ":", score[key]
+                    );
+        })
+));
+    };
+    return ScoreTable;
+})(React.Component);
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = ScoreTable;
+
+},{"react":158}]},{},[159]);

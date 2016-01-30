@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-
+import ScoreTable from './scoreTable'
 
 import {
     Store,
@@ -55,11 +55,16 @@ class Cell {
 }
 
 
-class GridState {
+class TwoDotsState {
     Grid:Cell[][] = []
     startDrag:boolean = false
 
     lastCell:Cell
+    score = {
+        'red': 0,
+        'yellow': 0,
+        'brown': 0
+    }
 
     constructor(public width, public height) {
         Array.apply(0, Array(height)).map((el, row) => {
@@ -71,22 +76,29 @@ class GridState {
     }
 }
 
-
-var Hello = React.createClass<HelloWorldProps, GridState>(
+var Hello = React.createClass<HelloWorldProps, TwoDotsState>(
     {
 
         getInitialState: function () {
-            return new GridState(Number(this.props.width), Number(this.props.height));
+            return new TwoDotsState(Number(this.props.width), Number(this.props.height));
         },
 
-        removeDots: function (state:GridState):void {
+        removeDots: function (state:TwoDotsState):void {
+
             var flatCells = [].concat.apply([], state.Grid);
-            if (flatCells.filter((e)=> {
-                    return e.className == 'selected'
-                })
-                    .length < 2) {
+
+            var selectedCells = flatCells.filter((e)=> {
+                return e.className == 'selected'
+            })
+
+            if (
+                selectedCells.length < 2) {
                 return
             }
+            else{
+                state.score[selectedCells[0].color] += selectedCells.length
+            }
+
             for (var i = state.height - 1; i >= 0; i--) {
 
                 var emptyCells = state.Grid[i].filter((e)=> {
@@ -99,8 +111,11 @@ var Hello = React.createClass<HelloWorldProps, GridState>(
                         //shift down
                         for (var n:number = i; n > 0; n--) {
                             var cellAbove = state.Grid[n-1][x]
+
+
                             state.Grid[n][x].color = cellAbove.color
                             state.Grid[n][x].className = cellAbove.className
+
                         }
                         state.Grid[0][x] = new Cell(x, 0)
                     }
@@ -155,8 +170,9 @@ var Hello = React.createClass<HelloWorldProps, GridState>(
         },
 
         render: function () {
-
-            return <table onMouseLeave={this.onMouseLeave}>
+            var state : TwoDotsState = this.state
+            return  <div>
+                <table onMouseLeave={this.onMouseLeave}>
                 <tbody>
                     {Array.apply(0, Array(this.state.height)).map((el, row) =>
                     <tr key={row}>
@@ -180,7 +196,9 @@ var Hello = React.createClass<HelloWorldProps, GridState>(
                         )}
 
                 </tbody>
-            </table>;
+            </table>
+                <ScoreTable score={state.score} />
+            </div>;
         }
 
     });
