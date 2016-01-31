@@ -19043,33 +19043,51 @@ function sleep(milliseconds) {
 var getRandomColor = function (colors) {
     return colors[getRandomInt(0, colors.length)];
 };
+var colors = ['red', 'yellow', 'brown', 'blue', 'green'];
 var Cell = (function () {
     function Cell(x, y) {
         this.className = 'unselected';
-        this.color = getRandomColor(['red', 'yellow', 'brown']);
+        this.color = getRandomColor(colors);
         this.x = x;
         this.y = y;
     }
     return Cell;
+})();
+var Rules = (function () {
+    function Rules() {
+        this.maxTurns = 0;
+        this.amountToCollect = {};
+    }
+    return Rules;
 })();
 var TwoDotsState = (function () {
     function TwoDotsState(width, height) {
         var _this = this;
         this.width = width;
         this.height = height;
+        this.Rules = new Rules();
         this.Grid = [];
         this.startDrag = false;
-        this.score = {
-            'red': 0,
-            'yellow': 0,
-            'brown': 0
-        };
+        this.turns = 0;
+        this.score = colors.reduce(function (total, color) {
+            total[color] = 0;
+            return total;
+        }, Object());
         Array.apply(0, Array(height)).map(function (el, row) {
             _this.Grid[row] = [];
             Array.apply(0, Array(width)).map(function (el1, col) {
                 _this.Grid[row][col] = new Cell(col, row);
             });
         });
+        /*todo: this is a temporary rules,
+        remove when ready
+        */
+        this.Rules.maxTurns = 10;
+        this.Rules.amountToCollect = {
+            'red': 3,
+            'yellow': 6,
+            'blue': 4
+        };
     }
     return TwoDotsState;
 })();
@@ -19107,6 +19125,20 @@ var Hello = React.createClass({displayName: "Hello",
             }
             i++;
         }
+        state.turns++;
+    },
+    checkResults: function (state) {
+        //have we lost?
+        if (state.Rules.maxTurns < state.turns) {
+            console.log('you lost!!!');
+            return;
+        }
+        // have we won?
+        if (Object.keys(state.Rules.amountToCollect).filter(function (key, i) {
+            return state.Rules.amountToCollect[key] > state.score[key];
+        }).length == 0) {
+            console.log('you won!!!');
+        }
     },
     onMouseLeave: function () {
         this.state.startDrag = false;
@@ -19121,6 +19153,7 @@ var Hello = React.createClass({displayName: "Hello",
         this.state.startDrag = false;
         this.removeDots(this.state);
         this.setState(this.state);
+        this.checkResults(this.state);
     },
     handleMouseOver: function (row, col, event) {
         var thisCell = this.state.Grid[row][col];
@@ -19146,24 +19179,24 @@ var Hello = React.createClass({displayName: "Hello",
         var _this = this;
         var state = this.state;
         return React.createElement("div", null, 
-                React.createElement("table", {onMouseLeave: this.onMouseLeave}, 
-                React.createElement("tbody", null, 
-                    Array.apply(0, Array(this.state.height)).map(function (el, row) {
-            return React.createElement("tr", {key: row}, 
+                React.createElement(scoreTable_1.default, {turns: state.turns, maxTurns: state.Rules.maxTurns, rules: state.Rules, score: state.score}), 
+                React.createElement("div", null, 
+                    React.createElement("table", {className: "mainGrid", onMouseLeave: this.onMouseLeave}, 
+                        React.createElement("tbody", null, 
+                            Array.apply(0, Array(this.state.height)).map(function (el, row) {
+            return React.createElement("tr", {className: "border", key: row}, 
 
-                        Array.apply(0, Array(_this.state.width)).map(function (el1, coll) {
+                                Array.apply(0, Array(_this.state.width)).map(function (el1, coll) {
                 return React.createElement("td", {key: coll, className: _this.state.Grid[row][coll].className, onMouseUp: _this.handleMouseUp, onMouseOver: _this.handleMouseOver.bind(null, row, coll, event), onMouseDown: _this.handleMouseDown.bind(null, row, coll)}, 
-
-                            React.createElement("div", {className: _this.state.Grid[row][coll].color})
-
-                        );
+                                    React.createElement("div", {className: _this.state.Grid[row][coll].color + ' cell'})
+                                );
             })
-                    );
+                            );
         })
 
+                        )
+                    )
                 )
-            ), 
-                React.createElement(scoreTable_1.default, {score: state.score})
             );
     }
 });
@@ -19187,13 +19220,20 @@ var ScoreTable = (function (_super) {
     }
     ScoreTable.prototype.render = function () {
         var score = this.props.score;
-        return (React.createElement("div", null, 
-                Object.keys(score).map(function (key) {
-            return React.createElement("div", {key: key}, 
-                        key, ":", score[key]
-                    );
-        })
-));
+        var rules = this.props.rules;
+        var turns = this.props.turns;
+        var maxTurns = this.props.maxTurns;
+        var cells = [];
+        Object.keys(rules.amountToCollect).map(function (key) {
+            //var short = key + " short"
+            var key2 = key + "value";
+            cells.push(React.createElement("td", {className: "short", key: key}, React.createElement("div", {className: key + ' cell'})));
+            cells.push(React.createElement("td", {className: "short2", key: key2}, score[key] + ' of ' + rules.amountToCollect[key]));
+        });
+        cells.push(React.createElement("td", {className: "short2", key: "turns"}, " ", turns + ' of ' + maxTurns, " "));
+        return (React.createElement("table", {className: "scoreTable"}, React.createElement("tbody", null, React.createElement("tr", null, 
+                cells
+                ))));
     };
     return ScoreTable;
 })(React.Component);

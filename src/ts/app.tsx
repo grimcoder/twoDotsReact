@@ -31,7 +31,7 @@ function getRandomInt(min, max) {
 function sleep(milliseconds) {
     var start = new Date().getTime();
     for (var i = 0; i < 1e7; i++) {
-        if ((new Date().getTime() - start) > milliseconds){
+        if ((new Date().getTime() - start) > milliseconds) {
             break;
         }
     }
@@ -41,10 +41,11 @@ var getRandomColor = (colors:[String]):String => {
     return colors[getRandomInt(0, colors.length)];
 }
 
+var colors:[string] = ['red', 'yellow', 'brown', 'blue', 'green']
 
 class Cell {
     className:String = 'unselected';
-    color:String = getRandomColor(['red', 'yellow', 'brown']);
+    color:String = getRandomColor(colors);
     x:number
     y:number
 
@@ -54,25 +55,43 @@ class Cell {
     }
 }
 
+class Rules{
+    maxTurns: number = 0
+    amountToCollect : {[color: string] : number} = {}
+}
 
 class TwoDotsState {
-    Grid:Cell[][] = []
-    startDrag:boolean = false
+    Rules : Rules = new Rules()
+    Grid : Cell[][] = []
+    startDrag : boolean = false
+    turns: number = 0
+    lastCell : Cell
+    score : {[color: string] : number}= colors.reduce((total, color)=>{
+        total[color] = 0
+        return total
+    }, Object())
 
-    lastCell:Cell
-    score = {
-        'red': 0,
-        'yellow': 0,
-        'brown': 0
-    }
 
-    constructor(public width, public height) {
+    constructor(public width: number, public height: number) {
         Array.apply(0, Array(height)).map((el, row) => {
             this.Grid[row] = [];
             Array.apply(0, Array(width)).map((el1, col) => {
                 this.Grid[row][col] = new Cell(col, row);
             });
         });
+
+        /*todo: this is a temporary rules,
+        remove when ready
+        */
+
+        this.Rules.maxTurns = 10
+
+        this.Rules.amountToCollect = {
+            'red': 3,
+            'yellow': 6,
+            'blue': 4
+        }
+
     }
 }
 
@@ -87,7 +106,7 @@ var Hello = React.createClass<HelloWorldProps, TwoDotsState>(
 
             var flatCells = [].concat.apply([], state.Grid);
 
-            var selectedCells = flatCells.filter((e)=> {
+            var selectedCells = flatCells.filter((e) => {
                 return e.className == 'selected'
             })
 
@@ -95,7 +114,7 @@ var Hello = React.createClass<HelloWorldProps, TwoDotsState>(
                 selectedCells.length < 2) {
                 return
             }
-            else{
+            else {
                 state.score[selectedCells[0].color] += selectedCells.length
             }
 
@@ -106,22 +125,41 @@ var Hello = React.createClass<HelloWorldProps, TwoDotsState>(
                 });
 
                 if (emptyCells.length == 0) continue;
-                for(var x : number = 0; x < state.width; x++){
+                for (var x:number = 0; x < state.width; x++) {
                     if (state.Grid[i][x].className == 'selected') {
                         //shift down
                         for (var n:number = i; n > 0; n--) {
-                            var cellAbove = state.Grid[n-1][x]
-
-
+                            var cellAbove = state.Grid[n - 1][x]
                             state.Grid[n][x].color = cellAbove.color
                             state.Grid[n][x].className = cellAbove.className
-
                         }
                         state.Grid[0][x] = new Cell(x, 0)
                     }
                 }
                 i++;
             }
+
+            state.turns++
+        },
+
+        checkResults : function (state:TwoDotsState){
+
+            //have we lost?
+
+            if (state.Rules.maxTurns < state.turns){
+                console.log('you lost!!!')
+                return
+            }
+
+            // have we won?
+
+            if (Object.keys(state.Rules.amountToCollect).filter((key : string,i: number)=>{
+                return state.Rules.amountToCollect[key] > state.score[key]
+            }).length == 0) {
+                console.log('you won!!!')
+            }
+
+
         },
 
         onMouseLeave: function () {
@@ -135,13 +173,10 @@ var Hello = React.createClass<HelloWorldProps, TwoDotsState>(
         },
 
         handleMouseUp: function () {
-
             this.state.startDrag = false
-
             this.removeDots(this.state);
             this.setState(this.state);
-
-
+            this.checkResults(this.state)
         },
 
         handleMouseOver: function (row, col, event) {
@@ -170,41 +205,37 @@ var Hello = React.createClass<HelloWorldProps, TwoDotsState>(
         },
 
         render: function () {
-            var state : TwoDotsState = this.state
+            var state:TwoDotsState = this.state
             return  <div>
-                <table onMouseLeave={this.onMouseLeave}>
-                <tbody>
-                    {Array.apply(0, Array(this.state.height)).map((el, row) =>
-                    <tr key={row}>
+                <ScoreTable turns={state.turns} maxTurns={state.Rules.maxTurns} rules={state.Rules} score={state.score}/>
+                <div>
+                    <table className="mainGrid" onMouseLeave={this.onMouseLeave}>
+                        <tbody>
+                            {Array.apply(0, Array(this.state.height)).map((el, row) =>
+                            <tr className="border" key={row}>
 
-                        {Array.apply(0, Array(this.state.width)).map((el1, coll) =>
+                                {Array.apply(0, Array(this.state.width)).map((el1, coll) =>
+                                <td key={coll} className={this.state.Grid[row][coll].className}
+                                    onMouseUp={this.handleMouseUp}
+                                    onMouseOver={this.handleMouseOver.bind(null, row, coll, event)}
+                                    onMouseDown={this.handleMouseDown.bind(null, row, coll)}>
+                                    <div className={this.state.Grid[row][coll].color + ' cell'}></div>
+                                </td>
 
-                        <td key={coll} className={this.state.Grid[row][coll].className}
+                                    )}
+                            </tr>
+                                )}
 
-                            onMouseUp={this.handleMouseUp}
-                            onMouseOver={this.handleMouseOver.bind(null, row, coll, event)}
-
-                            onMouseDown={this.handleMouseDown.bind(null, row, coll)}>
-
-                            <div className={this.state.Grid[row][coll].color}></div>
-
-                        </td>
-
-                            )}
-                    </tr>
-
-                        )}
-
-                </tbody>
-            </table>
-                <ScoreTable score={state.score} />
+                        </tbody>
+                    </table>
+                </div>
             </div>;
         }
 
     });
 
 ReactDOM.render(
-    <Hello name="World" width="5" height="5"/>,
+    <Hello name="World" width="5" height="5" />,
     document.getElementById('container')
 );
 
