@@ -6,17 +6,13 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
-
-
 class ScoreTable extends React.Component<any, any> {
 
     render() {
-
         var score = this.props.score
         var rules = this.props.rules
         var turns = this.props.turns
         var maxTurns = this.props.maxTurns
-
         var cells = []
 
         Object.keys(rules.amountToCollect).map(function(key){
@@ -26,7 +22,7 @@ class ScoreTable extends React.Component<any, any> {
             cells.push(<td className="short2"  key={key2}>{score[key] + ' of ' + rules.amountToCollect[key]}</td>)
         })
 
-        cells.push(<td className="short2"  key='turns'> {turns + ' of ' + maxTurns} </td>)
+        cells.push(<td className="short3"  key='turns'> {'Turns ' + turns + ' of ' + maxTurns} </td>)
 
         return (
                 <table className="scoreTable"><tbody><tr>

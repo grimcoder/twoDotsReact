@@ -19025,75 +19025,81 @@ module.exports = warning;
 module.exports = require('./lib/React');
 
 },{"./lib/React":26}],159:[function(require,module,exports){
+/**
+ * Created by taraskovtun on 1/31/16.
+ */
+var TwoDots;
+(function (TwoDots) {
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min)) + min;
+    }
+    var getRandomColor = function (colors) {
+        return colors[getRandomInt(0, colors.length)];
+    };
+    TwoDots.colors = ['red', 'yellow', 'brown', 'blue', 'green'];
+    var Cell = (function () {
+        function Cell(x, y) {
+            this.className = 'unselected';
+            this.color = getRandomColor(TwoDots.colors);
+            this.x = x;
+            this.y = y;
+        }
+        return Cell;
+    })();
+    TwoDots.Cell = Cell;
+    var Rules = (function () {
+        function Rules() {
+            this.maxTurns = 0;
+            this.amountToCollect = {};
+        }
+        return Rules;
+    })();
+    TwoDots.Rules = Rules;
+    var TwoDotsState = (function () {
+        function TwoDotsState(width, height) {
+            var _this = this;
+            this.width = width;
+            this.height = height;
+            this.Rules = new Rules();
+            this.Grid = [];
+            this.startDrag = false;
+            this.turns = 0;
+            this.score = TwoDots.colors.reduce(function (total, color) {
+                total[color] = 0;
+                return total;
+            }, Object());
+            Array.apply(0, Array(height)).map(function (el, row) {
+                _this.Grid[row] = [];
+                Array.apply(0, Array(width)).map(function (el1, col) {
+                    _this.Grid[row][col] = new Cell(col, row);
+                });
+            });
+            /*todo: this is a temporary rules,
+             remove when ready
+             */
+            this.Rules.maxTurns = 10;
+            this.Rules.amountToCollect = {
+                'red': 3,
+                'yellow': 6,
+                'blue': 4
+            };
+        }
+        return TwoDotsState;
+    })();
+    TwoDots.TwoDotsState = TwoDotsState;
+})(TwoDots = exports.TwoDots || (exports.TwoDots = {}));
+
+},{}],160:[function(require,module,exports){
 /// <reference path='../typings/tsd.d.ts'/>
+/// <reference path="TwoDotsState.ts" />
 var React = require('react');
 var ReactDOM = require('react-dom');
 var scoreTable_1 = require('./scoreTable');
-function getRandomInt(min, max) {
-    return Math.floor(Math.random() * (max - min)) + min;
-}
-function sleep(milliseconds) {
-    var start = new Date().getTime();
-    for (var i = 0; i < 1e7; i++) {
-        if ((new Date().getTime() - start) > milliseconds) {
-            break;
-        }
-    }
-}
-var getRandomColor = function (colors) {
-    return colors[getRandomInt(0, colors.length)];
-};
-var colors = ['red', 'yellow', 'brown', 'blue', 'green'];
-var Cell = (function () {
-    function Cell(x, y) {
-        this.className = 'unselected';
-        this.color = getRandomColor(colors);
-        this.x = x;
-        this.y = y;
-    }
-    return Cell;
-})();
-var Rules = (function () {
-    function Rules() {
-        this.maxTurns = 0;
-        this.amountToCollect = {};
-    }
-    return Rules;
-})();
-var TwoDotsState = (function () {
-    function TwoDotsState(width, height) {
-        var _this = this;
-        this.width = width;
-        this.height = height;
-        this.Rules = new Rules();
-        this.Grid = [];
-        this.startDrag = false;
-        this.turns = 0;
-        this.score = colors.reduce(function (total, color) {
-            total[color] = 0;
-            return total;
-        }, Object());
-        Array.apply(0, Array(height)).map(function (el, row) {
-            _this.Grid[row] = [];
-            Array.apply(0, Array(width)).map(function (el1, col) {
-                _this.Grid[row][col] = new Cell(col, row);
-            });
-        });
-        /*todo: this is a temporary rules,
-        remove when ready
-        */
-        this.Rules.maxTurns = 10;
-        this.Rules.amountToCollect = {
-            'red': 3,
-            'yellow': 6,
-            'blue': 4
-        };
-    }
-    return TwoDotsState;
-})();
+var levelEditor_1 = require('./levelEditor');
+var TwoDotsState_1 = require('./TwoDotsState');
 var Hello = React.createClass({displayName: "Hello",
     getInitialState: function () {
-        return new TwoDotsState(Number(this.props.width), Number(this.props.height));
+        return new TwoDotsState_1.TwoDots.TwoDotsState(Number(this.props.width), Number(this.props.height));
     },
     removeDots: function (state) {
         var flatCells = [].concat.apply([], state.Grid);
@@ -19120,7 +19126,7 @@ var Hello = React.createClass({displayName: "Hello",
                         state.Grid[n][x].color = cellAbove.color;
                         state.Grid[n][x].className = cellAbove.className;
                     }
-                    state.Grid[0][x] = new Cell(x, 0);
+                    state.Grid[0][x] = new TwoDotsState_1.TwoDots.Cell(x, 0);
                 }
             }
             i++;
@@ -19175,34 +19181,139 @@ var Hello = React.createClass({displayName: "Hello",
         this.state.Grid[row][col].className = 'selected';
         this.setState(this.state);
     },
+    updateLevel: function (width, height, MaxTurns, limits) {
+        console.log(arguments);
+        var newState = new TwoDotsState_1.TwoDots.TwoDotsState(Number(width), Number(height));
+        newState.Rules.maxTurns = Number(MaxTurns);
+        newState.Rules.amountToCollect = limits;
+        this.setState(newState);
+    },
     render: function () {
         var _this = this;
         var state = this.state;
+        console.log(state);
         return React.createElement("div", null, 
-                React.createElement(scoreTable_1.default, {turns: state.turns, maxTurns: state.Rules.maxTurns, rules: state.Rules, score: state.score}), 
-                React.createElement("div", null, 
-                    React.createElement("table", {className: "mainGrid", onMouseLeave: this.onMouseLeave}, 
-                        React.createElement("tbody", null, 
-                            Array.apply(0, Array(this.state.height)).map(function (el, row) {
+                    React.createElement(scoreTable_1.default, {turns: state.turns, maxTurns: state.Rules.maxTurns, rules: state.Rules, score: state.score}), 
+                    React.createElement("div", null, 
+                        React.createElement("table", {className: "mainGrid", onMouseLeave: this.onMouseLeave}, 
+                            React.createElement("tbody", null, 
+                                Array.apply(0, Array(state.height)).map(function (el, row) {
             return React.createElement("tr", {className: "border", key: row}, 
 
-                                Array.apply(0, Array(_this.state.width)).map(function (el1, coll) {
+                                    Array.apply(0, Array(state.width)).map(function (el1, coll) {
                 return React.createElement("td", {key: coll, className: _this.state.Grid[row][coll].className, onMouseUp: _this.handleMouseUp, onMouseOver: _this.handleMouseOver.bind(null, row, coll, event), onMouseDown: _this.handleMouseDown.bind(null, row, coll)}, 
-                                    React.createElement("div", {className: _this.state.Grid[row][coll].color + ' cell'})
-                                );
+                                        React.createElement("div", {className: state.Grid[row][coll].color + ' cell'})
+                                    );
             })
-                            );
+                                );
         })
-
+                            )
                         )
-                    )
-                )
-            );
+                    ), 
+
+                    React.createElement(levelEditor_1.default, {gridState: state, rules: state.Rules, score: state.score, updateLevel: this.updateLevel})
+                );
     }
 });
 ReactDOM.render(React.createElement(Hello, {name: "World", width: "5", height: "5"}), document.getElementById('container'));
 
-},{"./scoreTable":160,"react":158,"react-dom":2}],160:[function(require,module,exports){
+},{"./TwoDotsState":159,"./levelEditor":161,"./scoreTable":162,"react":158,"react-dom":2}],161:[function(require,module,exports){
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+/// <reference path='../typings/tsd.d.ts'/>
+var React = require('react');
+var TwoDotsState_1 = require('./TwoDotsState');
+var LevelEditor = (function (_super) {
+    __extends(LevelEditor, _super);
+    function LevelEditor(props) {
+        _super.call(this, props);
+        console.log(props);
+        var score = this.props.score;
+        var rules = this.props.rules;
+        var state = this.props.gridState;
+        var amountToCollect = rules.amountToCollect;
+        this.changed = this.changed.bind(this);
+        this.update = this.update.bind(this);
+        this.state = {
+            amountToCollect: amountToCollect,
+            width: state.width,
+            height: state.height,
+            MaxTurns: rules.maxTurns };
+    }
+    LevelEditor.prototype.changed = function (event) {
+        var width = (this.refs['width']).value;
+        var height = this.refs['height'].value;
+        var MaxTurns = this.refs['MaxTurns'].value;
+        var limits = {};
+        for (var color in this.state.amountToCollect) {
+            limits[color] = this.refs[color].value;
+        }
+        this.setState({
+            width: width,
+            height: height,
+            MaxTurns: MaxTurns,
+            amountToCollect: limits
+        });
+    };
+    LevelEditor.prototype.update = function () {
+        var width = (this.refs['width']).value;
+        var height = this.refs['height'].value;
+        var MaxTurns = this.refs['MaxTurns'].value;
+        var limits = {};
+        for (var color in this.state.amountToCollect) {
+            limits[color] = this.refs[color].value;
+        }
+        var updateLevel = this.props.updateLevel;
+        updateLevel(width, height, MaxTurns, limits);
+    };
+    LevelEditor.prototype.render = function () {
+        var colorRules = Object.keys(this.state.amountToCollect).length.toString();
+        var limits = this.state.amountToCollect;
+        var width = this.state.width;
+        var height = this.state.height;
+        var MaxTurns = this.state.MaxTurns;
+        var selectedColors = Object.keys(limits);
+        console.log(TwoDotsState_1.TwoDots.colors.length);
+        var colorRows = [];
+        for (var c in selectedColors) {
+            colorRows.push(React.createElement("tr", {key: selectedColors[c]}, React.createElement("td", {className: "short"}, React.createElement("div", {className: selectedColors[c] + ' cell'})), React.createElement("td", {className: "short2"}, 
+                React.createElement("input", {className: "short2", onChange: this.changed, type: "text", ref: selectedColors[c], value: limits[selectedColors[c]]}), " ")));
+        }
+        return React.createElement("div", null, 
+            React.createElement("div", {className: "levelEditor h4"}, "Level editor"), 
+
+            React.createElement("div", null, 
+                "Width:", 
+                React.createElement("input", {type: "text", className: "short", ref: "width", onChange: this.changed, value: width}), 
+                "Height:", 
+                React.createElement("input", {type: "text", className: "short", ref: "height", onChange: this.changed, value: height}), 
+                "Max turns:", 
+                React.createElement("input", {type: "text", className: "short", ref: "MaxTurns", onChange: this.changed, value: MaxTurns}), 
+                React.createElement("br", null), 
+                "How many colors:", 
+                React.createElement("input", {type: "text", className: "short2", ref: "colors", onChange: this.changed, value: colorRules})
+
+            ), 
+
+            React.createElement("table", null, 
+                React.createElement("tbody", null, 
+                    colorRows
+                )
+            ), 
+            React.createElement("br", null), 
+                React.createElement("button", {onClick: this.update, className: "btn"}, "Update")
+        );
+    };
+    return LevelEditor;
+})(React.Component);
+exports.LevelEditor = LevelEditor;
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = LevelEditor;
+
+},{"./TwoDotsState":159,"react":158}],162:[function(require,module,exports){
 /**
  * Created by taraskovtun on 1/29/16.
  */
@@ -19230,7 +19341,7 @@ var ScoreTable = (function (_super) {
             cells.push(React.createElement("td", {className: "short", key: key}, React.createElement("div", {className: key + ' cell'})));
             cells.push(React.createElement("td", {className: "short2", key: key2}, score[key] + ' of ' + rules.amountToCollect[key]));
         });
-        cells.push(React.createElement("td", {className: "short2", key: "turns"}, " ", turns + ' of ' + maxTurns, " "));
+        cells.push(React.createElement("td", {className: "short3", key: "turns"}, " ", 'Turns ' + turns + ' of ' + maxTurns, " "));
         return (React.createElement("table", {className: "scoreTable"}, React.createElement("tbody", null, React.createElement("tr", null, 
                 cells
                 ))));
@@ -19240,4 +19351,4 @@ var ScoreTable = (function (_super) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = ScoreTable;
 
-},{"react":158}]},{},[159]);
+},{"react":158}]},{},[160]);

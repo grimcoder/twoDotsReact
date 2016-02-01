@@ -74,6 +74,15 @@ tr.border{
     border: 0px;
 }
 
-.scoreTable{
+.short3 {
+    width: 100px;
+    border: 0px;
+}
+
+.scoreTable {
+    margin: 10px;
+}
+
+.levelEditor{
     margin: 10px;
 }
