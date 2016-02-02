@@ -19191,7 +19191,6 @@ var Hello = React.createClass({displayName: "Hello",
     render: function () {
         var _this = this;
         var state = this.state;
-        console.log(state);
         return React.createElement("div", null, 
                     React.createElement(scoreTable_1.default, {turns: state.turns, maxTurns: state.Rules.maxTurns, rules: state.Rules, score: state.score}), 
                     React.createElement("div", null, 
@@ -19237,13 +19236,23 @@ var LevelEditor = (function (_super) {
         var amountToCollect = rules.amountToCollect;
         this.changed = this.changed.bind(this);
         this.update = this.update.bind(this);
+        this.changedcolorRules = this.changedcolorRules.bind(this);
         this.state = {
             amountToCollect: amountToCollect,
             width: state.width,
             height: state.height,
             MaxTurns: rules.maxTurns };
     }
-    LevelEditor.prototype.changed = function (event) {
+    LevelEditor.prototype.changedcolorRules = function () {
+        var limits = {};
+        console.log(this.refs);
+        var colorLimit = this.refs['colorRules'].value;
+        TwoDotsState_1.TwoDots.colors.slice(0, Number(colorLimit)).map(function (color) {
+            limits[color] = 5;
+        });
+        this.setState({ amountToCollect: limits });
+    };
+    LevelEditor.prototype.changed = function () {
         var width = (this.refs['width']).value;
         var height = this.refs['height'].value;
         var MaxTurns = this.refs['MaxTurns'].value;
@@ -19286,6 +19295,7 @@ var LevelEditor = (function (_super) {
             React.createElement("div", {className: "levelEditor h4"}, "Level editor"), 
 
             React.createElement("div", null, 
+
                 "Width:", 
                 React.createElement("input", {type: "text", className: "short", ref: "width", onChange: this.changed, value: width}), 
                 "Height:", 
@@ -19294,7 +19304,7 @@ var LevelEditor = (function (_super) {
                 React.createElement("input", {type: "text", className: "short", ref: "MaxTurns", onChange: this.changed, value: MaxTurns}), 
                 React.createElement("br", null), 
                 "How many colors:", 
-                React.createElement("input", {type: "text", className: "short2", ref: "colors", onChange: this.changed, value: colorRules})
+                React.createElement("input", {type: "text", className: "short2", ref: "colorRules", onChange: this.changedcolorRules, value: colorRules})
 
             ), 
 

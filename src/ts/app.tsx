@@ -139,7 +139,6 @@ import {TwoDots} from './TwoDotsState'
             render: function () {
 
                 var state:TwoDots.TwoDotsState = this.state
-                console.log(state)
                 return  <div>
                     <ScoreTable turns={state.turns} maxTurns={state.Rules.maxTurns} rules={state.Rules}
                                 score={state.score}/>

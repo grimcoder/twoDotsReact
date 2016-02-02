@@ -5,6 +5,9 @@ import {TwoDots} from './TwoDotsState'
 
 export class LevelEditor extends React.Component<any, any> {
 
+    refs: {
+        [key: string]: (HTMLInputElement);
+    }
 
     constructor(props){
         super(props)
@@ -14,9 +17,9 @@ export class LevelEditor extends React.Component<any, any> {
         var state = this.props.gridState;
         var amountToCollect = rules.amountToCollect
 
-
         this.changed = this.changed.bind(this)
         this.update = this.update.bind(this)
+        this.changedcolorRules = this.changedcolorRules.bind(this)
 
         this.state = {
             amountToCollect : amountToCollect,
@@ -25,9 +28,22 @@ export class LevelEditor extends React.Component<any, any> {
             MaxTurns: rules.maxTurns}
     }
 
+    changedcolorRules(){
+        var limits = {}
+        console.log(this.refs)
+
+        var colorLimit = this.refs['colorRules'].value
+
+        TwoDots.colors.slice(0,Number(colorLimit)).map((color)=>{
+            limits[color] = 5
+        })
 
 
-    changed(event){
+
+        this.setState({amountToCollect: limits})
+    }
+
+    changed(){
 
 
         var width = (this.refs['width']).value;
@@ -45,6 +61,7 @@ export class LevelEditor extends React.Component<any, any> {
             amountToCollect: limits
        })
     }
+
 
     update(){
         var width = (this.refs['width']).value;
@@ -82,6 +99,7 @@ export class LevelEditor extends React.Component<any, any> {
             <div className="levelEditor h4">Level editor</div>
 
             <div>
+
                 Width:
                 <input type="text" className="short" ref="width"  onChange={this.changed} value={width} />
                 Height:
@@ -90,7 +108,7 @@ export class LevelEditor extends React.Component<any, any> {
                 <input type="text" className="short" ref="MaxTurns"  onChange={this.changed} value={MaxTurns} />
                 <br/>
                 How many colors:
-                <input type="text" className="short2" ref="colors" onChange={this.changed} value={colorRules} />
+                <input type="text" className="short2" ref="colorRules" onChange={this.changedcolorRules} value={colorRules} />
 
             </div>
 
