@@ -19061,6 +19061,7 @@ var TwoDots;
             this.width = width;
             this.height = height;
             this.Rules = new Rules();
+            this.mode = 'board';
             this.Grid = [];
             this.startDrag = false;
             this.turns = 0;
@@ -19074,9 +19075,6 @@ var TwoDots;
                     _this.Grid[row][col] = new Cell(col, row);
                 });
             });
-            /*todo: this is a temporary rules,
-             remove when ready
-             */
             this.Rules.maxTurns = 10;
             this.Rules.amountToCollect = {
                 'red': 3,
@@ -19102,9 +19100,16 @@ var Hello = React.createClass({displayName: "Hello",
     getInitialState: function () {
         return new TwoDotsState_1.TwoDots.TwoDotsState(Number(this.props.width), Number(this.props.height));
     },
+    needsShuffling: function () {
+    },
+    thisArray: function () {
+        return [].concat.apply([], this.state.Grid);
+    },
     removeDots: function (state) {
         var selectedColor = this.path[0].color;
-        var thisColorArray = [].concat.apply([], this.state.Grid).filter(function (cell) { return cell.color == selectedColor; });
+        var thisColorArray = this.thisArray().filter(function (cell) {
+            return cell.color == selectedColor;
+        });
         if (this.path.length < 2) {
             return;
         }
@@ -19118,10 +19123,14 @@ var Hello = React.createClass({displayName: "Hello",
             state.score[selectedColor] += thisColorArray.length;
         }
         for (var i = 0; i < state.height; i++) {
-            if (cellsToRemove.filter(function (cell) { return cell.y == i; }).length == 0)
+            if (cellsToRemove.filter(function (cell) {
+                return cell.y == i;
+            }).length == 0)
                 continue;
             for (var x = 0; x < state.width; x++) {
-                var cellInPath = cellsToRemove.filter(function (cell) { return cell.x == x && cell.y == i; });
+                var cellInPath = cellsToRemove.filter(function (cell) {
+                    return cell.x == x && cell.y == i;
+                });
                 if (cellInPath.length > 0) {
                     cellsToRemove.splice(cellsToRemove.indexOf(cellInPath[0]), 1);
                     for (var n = i; n > 0; n--) {
@@ -19181,20 +19190,30 @@ var Hello = React.createClass({displayName: "Hello",
     isLoop: function () {
         var isLoop = false;
         var lastInPath = this.path[this.path.length - 1];
-        if (this.path.filter(function (cell) { return cell.x == lastInPath.x && cell.y == lastInPath.y; }).length > 1) {
+        if (this.path.filter(function (cell) {
+            return cell.x == lastInPath.x && cell.y == lastInPath.y;
+        }).length > 1) {
             isLoop = true;
         }
         return isLoop;
     },
     handleMouseDown: function (row, col) {
         this.path.push(this.state.Grid[row][col]);
-        console.log(this.path);
+        this.setState(this.state);
+    },
+    ShowLevelEditor: function () {
+        this.state.mode = 'editor';
+        this.setState(this.state);
+    },
+    ShowBoard: function () {
+        this.state.mode = 'board';
         this.setState(this.state);
     },
     updateLevel: function (width, height, MaxTurns, limits) {
         var newState = new TwoDotsState_1.TwoDots.TwoDotsState(Number(width), Number(height));
         newState.Rules.maxTurns = Number(MaxTurns);
         newState.Rules.amountToCollect = limits;
+        newState.mode = 'board';
         this.setState(newState);
     },
     render: function () {
@@ -19202,32 +19221,44 @@ var Hello = React.createClass({displayName: "Hello",
         var isLoop = this.isLoop();
         var lastColor = this.path.length > 0 ? this.path[this.path.length - 1].color : undefined;
         var state = this.state;
-        return React.createElement("div", null, 
-                    React.createElement(scoreTable_1.default, {turns: state.turns, maxTurns: state.Rules.maxTurns, rules: state.Rules, score: state.score}), 
-                    React.createElement("div", null, 
-                        React.createElement("table", {className: "mainGrid", onMouseLeave: this.onMouseLeave}, 
-                            React.createElement("tbody", null, 
-                                Array.apply(0, Array(state.height)).map(function (el, row) {
-            return React.createElement("tr", {className: "border", key: row}, 
-
-                                    Array.apply(0, Array(state.width)).map(function (el1, coll) {
-                return React.createElement("td", {key: coll, className: _this.path.filter(function (cell) {
-                    return (cell.x == coll && cell.y == row)
-                        || (isLoop && state.Grid[row][coll].color == lastColor);
-                }).length == 0
-                    ? 'unselected' : 'selected', onMouseUp: _this.handleMouseUp, onMouseOver: _this.handleMouseOver.bind(null, row, coll, event), onMouseDown: _this.handleMouseDown.bind(null, row, coll)}, 
-
-                                        React.createElement("div", {className: state.Grid[row][coll].color + ' cell'})
-                                    );
-            })
-                                );
-        })
-                            )
-                        )
-                    ), 
-
+        var body;
+        if (this.state.mode == 'editor') {
+            body = React.createElement("div", null, 
+                    React.createElement("button", {onClick: this.ShowBoard, className: "btn btn-info"}, "Show board"), 
                     React.createElement(levelEditor_1.default, {gridState: state, rules: state.Rules, score: state.score, updateLevel: this.updateLevel})
                 );
+        }
+        else {
+            body = React.createElement("div", null, 
+                    React.createElement("button", {onClick: this.ShowLevelEditor, className: "btn btn-info"}, "Level editor"), 
+                    React.createElement(scoreTable_1.default, {turns: state.turns, maxTurns: state.Rules.maxTurns, rules: state.Rules, score: state.score}), 
+
+                    React.createElement("table", {className: "mainGrid", onMouseLeave: this.onMouseLeave}, 
+                        React.createElement("tbody", null, 
+                            Array.apply(0, Array(state.height)).map(function (el, row) {
+                return React.createElement("tr", {className: "border", key: row}, 
+
+                                Array.apply(0, Array(state.width)).map(function (el1, coll) {
+                    return React.createElement("td", {key: coll, className: _this.path.filter(function (cell) {
+                        return (cell.x == coll && cell.y == row)
+                            || (isLoop && state.Grid[row][coll].color == lastColor);
+                    }).length == 0
+                        ? 'unselected' : 'selected', onMouseUp: _this.handleMouseUp, onMouseOver: _this.handleMouseOver.bind(null, row, coll, event), onMouseDown: _this.handleMouseDown.bind(null, row, coll)}, 
+
+                                    React.createElement("div", {className: state.Grid[row][coll].color + ' cell'})
+                                );
+                })
+                            );
+            })
+                        )
+                    )
+                );
+        }
+        return React.createElement("div", null, 
+
+                body
+
+            );
     }
 });
 ReactDOM.render(React.createElement(Hello, {name: "World", width: "10", height: "8"}), document.getElementById('container'));

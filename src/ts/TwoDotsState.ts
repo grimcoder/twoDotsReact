@@ -33,10 +33,10 @@ export module TwoDots {
 
     export class TwoDotsState {
         Rules:Rules = new Rules()
+        mode: string = 'board'
         Grid:Cell[][] = []
         startDrag:boolean = false
         turns:number = 0
-        lastCell:Cell
         score:{[color: string] : number} = colors.reduce((total, color)=> {
             total[color] = 0
             return total
@@ -50,12 +50,6 @@ export module TwoDots {
                     this.Grid[row][col] = new Cell(col, row);
                 });
             });
-
-
-            /*todo: this is a temporary rules,
-             remove when ready
-             */
-
 
             this.Rules.maxTurns = 10
 
