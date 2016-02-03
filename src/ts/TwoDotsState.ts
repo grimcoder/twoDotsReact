@@ -43,7 +43,7 @@ export module TwoDots {
         }, Object())
 
 
-        constructor(public width:number, public height:number) {
+        constructor(public width:number = 10, public height:number = 10) {
             Array.apply(0, Array(height)).map((el, row) => {
                 this.Grid[row] = [];
                 Array.apply(0, Array(width)).map((el1, col) => {

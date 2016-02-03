@@ -19058,6 +19058,8 @@ var TwoDots;
     var TwoDotsState = (function () {
         function TwoDotsState(width, height) {
             var _this = this;
+            if (width === void 0) { width = 10; }
+            if (height === void 0) { height = 10; }
             this.width = width;
             this.height = height;
             this.Rules = new Rules();
@@ -19147,14 +19149,18 @@ var Hello = React.createClass({displayName: "Hello",
     checkResults: function (state) {
         //have we lost?
         if (state.Rules.maxTurns < state.turns) {
-            console.log('you lost!!!');
+            this.state.mode = 'message';
+            this.state.message = 'You lost!!!';
+            this.setState(this.state);
             return;
         }
         // have we won?
         if (Object.keys(state.Rules.amountToCollect).filter(function (key, i) {
             return state.Rules.amountToCollect[key] > state.score[key];
         }).length == 0) {
-            console.log('you won!!!');
+            this.state.mode = 'message';
+            this.state.message = 'You won!!!';
+            this.setState(this.state);
         }
     },
     onMouseLeave: function () {
@@ -19216,6 +19222,11 @@ var Hello = React.createClass({displayName: "Hello",
         newState.mode = 'board';
         this.setState(newState);
     },
+    startNew: function () {
+        var newState = new TwoDotsState_1.TwoDots.TwoDotsState();
+        newState.mode = 'board';
+        this.setState(newState);
+    },
     render: function () {
         var _this = this;
         var isLoop = this.isLoop();
@@ -19228,7 +19239,7 @@ var Hello = React.createClass({displayName: "Hello",
                     React.createElement(levelEditor_1.default, {gridState: state, rules: state.Rules, score: state.score, updateLevel: this.updateLevel})
                 );
         }
-        else {
+        else if (this.state.mode == 'board') {
             body = React.createElement("div", null, 
                     React.createElement("button", {onClick: this.ShowLevelEditor, className: "btn btn-info"}, "Level editor"), 
                     React.createElement(scoreTable_1.default, {turns: state.turns, maxTurns: state.Rules.maxTurns, rules: state.Rules, score: state.score}), 
@@ -19252,6 +19263,12 @@ var Hello = React.createClass({displayName: "Hello",
             })
                         )
                     )
+                );
+        }
+        else if (this.state.mode == 'message') {
+            body = React.createElement("section", null, 
+                    React.createElement("h1", null, this.state.message), 
+                    React.createElement("button", {className: "btn btn-danger", onClick: this.startNew}, "Start new")
                 );
         }
         return React.createElement("div", null, 

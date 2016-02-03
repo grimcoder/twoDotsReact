@@ -101,14 +101,19 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
         checkResults: function (state:TwoDots.TwoDotsState) {
             //have we lost?
             if (state.Rules.maxTurns < state.turns) {
-                console.log('you lost!!!')
+                this.state.mode = 'message'
+                this.state.message = 'You lost!!!'
+                this.setState(this.state)
+
                 return
             }
             // have we won?
             if (Object.keys(state.Rules.amountToCollect).filter((key:string, i:number) => {
                     return state.Rules.amountToCollect[key] > state.score[key]
                 }).length == 0) {
-                console.log('you won!!!')
+                this.state.mode = 'message'
+                this.state.message = 'You won!!!'
+                this.setState(this.state)
             }
         },
 
@@ -185,6 +190,11 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
             newState.mode = 'board'
             this.setState(newState);
         },
+        startNew: function(){
+            var newState : TwoDots.TwoDotsState = new TwoDots.TwoDotsState()
+            newState.mode = 'board'
+            this.setState(newState);
+        },
 
         render: function () {
             var isLoop = this.isLoop()
@@ -200,7 +210,7 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
                                  updateLevel={this.updateLevel}/>
                 </div>
             }
-            else {
+            else if (this.state.mode == 'board') {
                 body =<div>
                     <button onClick={this.ShowLevelEditor} className="btn btn-info">Level editor</button>
                     <ScoreTable turns={state.turns} maxTurns={state.Rules.maxTurns} rules={state.Rules}
@@ -230,6 +240,13 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
                     </table>
                 </div>
 
+            }
+
+            else if  (this.state.mode == 'message'){
+                body =<section>
+                    <h1>{this.state.message}</h1>
+                    <button className="btn btn-danger" onClick={this.startNew}>Start new</button>
+                </section>
             }
             return  <div>
 
