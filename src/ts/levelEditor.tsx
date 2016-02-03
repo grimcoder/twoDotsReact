@@ -11,8 +11,7 @@ export class LevelEditor extends React.Component<any, any> {
 
     constructor(props){
         super(props)
-        console.log(props)
-        var score = this.props.score
+
         var rules : TwoDots.Rules = this.props.rules
         var state = this.props.gridState;
         var amountToCollect = rules.amountToCollect
@@ -30,7 +29,6 @@ export class LevelEditor extends React.Component<any, any> {
 
     changedcolorRules(){
         var limits = {}
-        console.log(this.refs)
 
         var colorLimit = this.refs['colorRules'].value
 
@@ -87,7 +85,6 @@ export class LevelEditor extends React.Component<any, any> {
 
         var selectedColors = Object.keys(limits)
 
-        console.log(TwoDots.colors.length)
         var colorRows = []
 
         for (var c in selectedColors){

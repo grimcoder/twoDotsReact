@@ -19098,38 +19098,40 @@ var scoreTable_1 = require('./scoreTable');
 var levelEditor_1 = require('./levelEditor');
 var TwoDotsState_1 = require('./TwoDotsState');
 var Hello = React.createClass({displayName: "Hello",
+    path: [],
     getInitialState: function () {
         return new TwoDotsState_1.TwoDots.TwoDotsState(Number(this.props.width), Number(this.props.height));
     },
     removeDots: function (state) {
-        var flatCells = [].concat.apply([], state.Grid);
-        var selectedCells = flatCells.filter(function (e) {
-            return e.className == 'selected';
-        });
-        if (selectedCells.length < 2) {
+        var selectedColor = this.path[0].color;
+        var thisColorArray = [].concat.apply([], this.state.Grid).filter(function (cell) { return cell.color == selectedColor; });
+        if (this.path.length < 2) {
             return;
         }
-        else {
-            state.score[selectedCells[0].color] += selectedCells.length;
+        var cellsToRemove;
+        if (!this.isLoop()) {
+            state.score[selectedColor] += this.path.length;
+            cellsToRemove = this.path;
         }
-        for (var i = state.height - 1; i >= 0; i--) {
-            var emptyCells = state.Grid[i].filter(function (e) {
-                return e.className == 'selected';
-            });
-            if (emptyCells.length == 0)
+        else {
+            cellsToRemove = thisColorArray;
+            state.score[selectedColor] += thisColorArray.length;
+        }
+        for (var i = 0; i < state.height; i++) {
+            if (cellsToRemove.filter(function (cell) { return cell.y == i; }).length == 0)
                 continue;
             for (var x = 0; x < state.width; x++) {
-                if (state.Grid[i][x].className == 'selected') {
-                    //shift down
+                var cellInPath = cellsToRemove.filter(function (cell) { return cell.x == x && cell.y == i; });
+                if (cellInPath.length > 0) {
+                    cellsToRemove.splice(cellsToRemove.indexOf(cellInPath[0]), 1);
                     for (var n = i; n > 0; n--) {
                         var cellAbove = state.Grid[n - 1][x];
-                        state.Grid[n][x].color = cellAbove.color;
-                        state.Grid[n][x].className = cellAbove.className;
+                        state.Grid[n][x] = cellAbove;
+                        cellAbove.y++;
                     }
                     state.Grid[0][x] = new TwoDotsState_1.TwoDots.Cell(x, 0);
                 }
             }
-            i++;
         }
         state.turns++;
     },
@@ -19148,41 +19150,48 @@ var Hello = React.createClass({displayName: "Hello",
     },
     onMouseLeave: function () {
         this.state.startDrag = false;
-        this.state.Grid.map(function (elem, i) {
-            elem.map(function (cell, n) {
-                cell.className = 'unselected';
-            });
-        });
+        this.path = [];
         this.setState(this.state);
     },
     handleMouseUp: function () {
         this.state.startDrag = false;
         this.removeDots(this.state);
+        this.path = [];
         this.setState(this.state);
         this.checkResults(this.state);
     },
-    handleMouseOver: function (row, col, event) {
-        var thisCell = this.state.Grid[row][col];
-        if (!this.state.startDrag ||
-            thisCell.color != this.state.lastCell.color ||
-            Math.abs(this.state.lastCell.x - thisCell.x) +
-                Math.abs(this.state.lastCell.y - thisCell.y) > 1)
+    handleMouseOver: function (row, col) {
+        if (!this.path || this.path.length == 0) {
             return;
-        if (thisCell.className == 'selected') {
-            this.state.lastCell.className = 'unselected';
         }
-        this.state.lastCell = thisCell;
-        thisCell.className = 'selected';
+        var lastCell = this.path[this.path.length - 1];
+        var thisCell = this.state.Grid[row][col];
+        if (thisCell.color != lastCell.color ||
+            Math.abs(lastCell.x - thisCell.x) +
+                Math.abs(lastCell.y - thisCell.y) > 1)
+            return;
+        if (this.state.Grid[row][col] == this.path[this.path.length - 2]) {
+            this.path.pop();
+        }
+        if (this.path[this.path.length - 1] != this.state.Grid[row][col]) {
+            this.path.push(this.state.Grid[row][col]);
+        }
         this.setState(this.state);
     },
+    isLoop: function () {
+        var isLoop = false;
+        var lastInPath = this.path[this.path.length - 1];
+        if (this.path.filter(function (cell) { return cell.x == lastInPath.x && cell.y == lastInPath.y; }).length > 1) {
+            isLoop = true;
+        }
+        return isLoop;
+    },
     handleMouseDown: function (row, col) {
-        this.state.startDrag = true;
-        this.state.lastCell = this.state.Grid[row][col];
-        this.state.Grid[row][col].className = 'selected';
+        this.path.push(this.state.Grid[row][col]);
+        console.log(this.path);
         this.setState(this.state);
     },
     updateLevel: function (width, height, MaxTurns, limits) {
-        console.log(arguments);
         var newState = new TwoDotsState_1.TwoDots.TwoDotsState(Number(width), Number(height));
         newState.Rules.maxTurns = Number(MaxTurns);
         newState.Rules.amountToCollect = limits;
@@ -19190,6 +19199,8 @@ var Hello = React.createClass({displayName: "Hello",
     },
     render: function () {
         var _this = this;
+        var isLoop = this.isLoop();
+        var lastColor = this.path.length > 0 ? this.path[this.path.length - 1].color : undefined;
         var state = this.state;
         return React.createElement("div", null, 
                     React.createElement(scoreTable_1.default, {turns: state.turns, maxTurns: state.Rules.maxTurns, rules: state.Rules, score: state.score}), 
@@ -19200,7 +19211,12 @@ var Hello = React.createClass({displayName: "Hello",
             return React.createElement("tr", {className: "border", key: row}, 
 
                                     Array.apply(0, Array(state.width)).map(function (el1, coll) {
-                return React.createElement("td", {key: coll, className: _this.state.Grid[row][coll].className, onMouseUp: _this.handleMouseUp, onMouseOver: _this.handleMouseOver.bind(null, row, coll, event), onMouseDown: _this.handleMouseDown.bind(null, row, coll)}, 
+                return React.createElement("td", {key: coll, className: _this.path.filter(function (cell) {
+                    return (cell.x == coll && cell.y == row)
+                        || (isLoop && state.Grid[row][coll].color == lastColor);
+                }).length == 0
+                    ? 'unselected' : 'selected', onMouseUp: _this.handleMouseUp, onMouseOver: _this.handleMouseOver.bind(null, row, coll, event), onMouseDown: _this.handleMouseDown.bind(null, row, coll)}, 
+
                                         React.createElement("div", {className: state.Grid[row][coll].color + ' cell'})
                                     );
             })
@@ -19214,7 +19230,7 @@ var Hello = React.createClass({displayName: "Hello",
                 );
     }
 });
-ReactDOM.render(React.createElement(Hello, {name: "World", width: "5", height: "5"}), document.getElementById('container'));
+ReactDOM.render(React.createElement(Hello, {name: "World", width: "10", height: "8"}), document.getElementById('container'));
 
 },{"./TwoDotsState":159,"./levelEditor":161,"./scoreTable":162,"react":158,"react-dom":2}],161:[function(require,module,exports){
 var __extends = (this && this.__extends) || function (d, b) {
@@ -19229,8 +19245,6 @@ var LevelEditor = (function (_super) {
     __extends(LevelEditor, _super);
     function LevelEditor(props) {
         _super.call(this, props);
-        console.log(props);
-        var score = this.props.score;
         var rules = this.props.rules;
         var state = this.props.gridState;
         var amountToCollect = rules.amountToCollect;
@@ -19245,7 +19259,6 @@ var LevelEditor = (function (_super) {
     }
     LevelEditor.prototype.changedcolorRules = function () {
         var limits = {};
-        console.log(this.refs);
         var colorLimit = this.refs['colorRules'].value;
         TwoDotsState_1.TwoDots.colors.slice(0, Number(colorLimit)).map(function (color) {
             limits[color] = 5;
@@ -19285,7 +19298,6 @@ var LevelEditor = (function (_super) {
         var height = this.state.height;
         var MaxTurns = this.state.MaxTurns;
         var selectedColors = Object.keys(limits);
-        console.log(TwoDotsState_1.TwoDots.colors.length);
         var colorRows = [];
         for (var c in selectedColors) {
             colorRows.push(React.createElement("tr", {key: selectedColors[c]}, React.createElement("td", {className: "short"}, React.createElement("div", {className: selectedColors[c] + ' cell'})), React.createElement("td", {className: "short2"}, 

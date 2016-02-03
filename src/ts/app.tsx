@@ -21,54 +21,74 @@ import { Action } from 'redux-actions';
 
 import {TwoDots} from './TwoDotsState'
 
+
     interface HelloWorldProps {
         name: string;
         width: string;
         height: string;
     }
 
-    var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
+
+    var Hello  = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
 
         {
+            path  : [],
+
             getInitialState: function () {
                 return new TwoDots.TwoDotsState(Number(this.props.width), Number(this.props.height));
             },
-            removeDots: function (state:TwoDots.TwoDotsState):void {
-                var flatCells = [].concat.apply([], state.Grid);
-                var selectedCells = flatCells.filter((e) => {
-                    return e.className == 'selected'
-                })
+
+            removeDots: function (state:TwoDots.TwoDotsState) : void  {
+                var selectedColor = this.path[0].color
+
+                var thisColorArray = [].concat.apply([],
+                    this.state.Grid).filter((cell)=>{return cell.color == selectedColor})
 
                 if (
-                    selectedCells.length < 2) {
+                    this.path.length < 2) {
                     return
                 }
+                var cellsToRemove : [TwoDots.Cell]
+
+
+                if (!this.isLoop()){
+                    state.score[selectedColor] += this.path.length
+                    cellsToRemove = this.path}
                 else {
-                    state.score[selectedCells[0].color] += selectedCells.length
+                    cellsToRemove = thisColorArray
+                    state.score[selectedColor] += thisColorArray.length
                 }
 
-                for (var i = state.height - 1; i >= 0; i--) {
 
-                    var emptyCells = state.Grid[i].filter((e)=> {
-                        return e.className == 'selected'
-                    });
+                for (var i = 0; i < state.height; i++) {
 
-                    if (emptyCells.length == 0) continue;
+                    if (cellsToRemove.filter((cell)=>{return cell.y == i}).length == 0) continue;
+
+
                     for (var x:number = 0; x < state.width; x++) {
-                        if (state.Grid[i][x].className == 'selected') {
-                            //shift down
+
+                        var cellInPath  = cellsToRemove.filter((cell)=>{return cell.x == x && cell.y == i})
+
+                        if (cellInPath.length > 0) {
+
+                            cellsToRemove.splice(cellsToRemove.indexOf(cellInPath[0]), 1)
+
                             for (var n:number = i; n > 0; n--) {
                                 var cellAbove = state.Grid[n - 1][x]
-                                state.Grid[n][x].color = cellAbove.color
-                                state.Grid[n][x].className = cellAbove.className
+                                state.Grid[n][x] = cellAbove
+                                cellAbove.y++
                             }
+
                             state.Grid[0][x] = new TwoDots.Cell(x, 0)
                         }
+
                     }
-                    i++;
+
                 }
+
                 state.turns++
             },
+
 
             checkResults: function (state:TwoDots.TwoDotsState) {
                 //have we lost?
@@ -77,7 +97,7 @@ import {TwoDots} from './TwoDotsState'
                     return
                 }
                 // have we won?
-                if (Object.keys(state.Rules.amountToCollect).filter((key:string, i:number)=> {
+                if (Object.keys(state.Rules.amountToCollect).filter((key:string, i:number) => {
                         return state.Rules.amountToCollect[key] > state.score[key]
                     }).length == 0) {
                     console.log('you won!!!')
@@ -86,57 +106,72 @@ import {TwoDots} from './TwoDotsState'
 
             onMouseLeave: function () {
                 this.state.startDrag = false
-                this.state.Grid.map((elem, i)=> {
-                    elem.map((cell:TwoDots.Cell, n)=> {
-                        cell.className = 'unselected'
-                    })
-                })
+                this.path = []
                 this.setState(this.state);
             },
 
             handleMouseUp: function () {
                 this.state.startDrag = false
                 this.removeDots(this.state);
+                this.path = []
                 this.setState(this.state);
                 this.checkResults(this.state)
             },
 
-            handleMouseOver: function (row, col, event) {
-                var thisCell = this.state.Grid[row][col];
-                if (!this.state.startDrag ||
-                    thisCell.color != this.state.lastCell.color ||
-                    Math.abs(this.state.lastCell.x - thisCell.x) +
-                    Math.abs(this.state.lastCell.y - thisCell.y) > 1
-                ) return
+            handleMouseOver: function (row, col) {
 
-                if (thisCell.className == 'selected') {
-                    this.state.lastCell.className = 'unselected'
+                if (!this.path || this.path.length == 0){
+                    return
                 }
 
-                this.state.lastCell = thisCell
-                thisCell.className = 'selected';
+                var lastCell = this.path[this.path.length - 1]
+                var thisCell = this.state.Grid[row][col];
+
+                if (thisCell.color != lastCell.color ||
+                    Math.abs(lastCell.x - thisCell.x) +
+                    Math.abs(lastCell.y - thisCell.y) > 1
+                ) return
+
+                if (this.state.Grid[row][col] == this.path[this.path.length - 2]) {
+                    this.path.pop()
+                }
+
+                if (this.path[this.path.length - 1] != this.state.Grid[row][col]) {
+                    this.path.push(this.state.Grid[row][col])
+                }
+
                 this.setState(this.state);
             },
 
-            handleMouseDown: function (row, col) {
-                this.state.startDrag = true
-                this.state.lastCell = this.state.Grid[row][col]
+            isLoop: function(){
+                var isLoop = false
 
-                this.state.Grid[row][col].className = 'selected';
+                var lastInPath = this.path[this.path.length - 1]
+
+                if (this.path.filter((cell)=>{return cell.x == lastInPath.x && cell.y == lastInPath.y}).length > 1){
+                    isLoop = true
+                }
+                return isLoop
+            },
+
+            handleMouseDown: function (row, col) {
+
+                this.path.push(this.state.Grid[row][col])
+                console.log(this.path)
                 this.setState(this.state);
             },
 
             updateLevel: function(width,height,MaxTurns,limits){
-                console.log(arguments)
 
                 var newState = new TwoDots.TwoDotsState(Number(width), Number(height))
-
                 newState.Rules.maxTurns = Number(MaxTurns)
                 newState.Rules.amountToCollect = limits
                 this.setState(newState);
             },
 
             render: function () {
+                var isLoop = this.isLoop()
+                var lastColor = this.path.length > 0 ? this.path[this.path.length - 1].color : undefined
 
                 var state:TwoDots.TwoDotsState = this.state
                 return  <div>
@@ -149,10 +184,14 @@ import {TwoDots} from './TwoDotsState'
                                 <tr className="border" key={row}>
 
                                     {Array.apply(0, Array(state.width)).map((el1, coll) =>
-                                    <td key={coll} className={this.state.Grid[row][coll].className}
+                                    <td key={coll} className={this.path.filter((cell)=>{return (cell.x == coll && cell.y == row)
+                                    || (isLoop && state.Grid[row][coll].color == lastColor)}).length == 0
+                                    ? 'unselected' : 'selected'}
+
                                         onMouseUp={this.handleMouseUp}
                                         onMouseOver={this.handleMouseOver.bind(null, row, coll, event)}
                                         onMouseDown={this.handleMouseDown.bind(null, row, coll)}>
+
                                         <div className={state.Grid[row][coll].color + ' cell'}></div>
                                     </td>
 
@@ -170,7 +209,7 @@ import {TwoDots} from './TwoDotsState'
         });
 
     ReactDOM.render(
-        <Hello name="World" width="5" height="5"/>,
+        <Hello name="World" width="10" height="8"/>,
         document.getElementById('container')
     );
 
