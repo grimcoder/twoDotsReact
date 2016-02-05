@@ -19039,7 +19039,6 @@ var TwoDots;
     TwoDots.colors = ['red', 'yellow', 'brown', 'blue', 'green'];
     var Cell = (function () {
         function Cell(x, y) {
-            this.className = 'unselected';
             this.color = getRandomColor(TwoDots.colors);
             this.x = x;
             this.y = y;
@@ -19058,8 +19057,8 @@ var TwoDots;
     var TwoDotsState = (function () {
         function TwoDotsState(width, height) {
             var _this = this;
-            if (width === void 0) { width = 10; }
-            if (height === void 0) { height = 10; }
+            if (width === void 0) { width = 5; }
+            if (height === void 0) { height = 5; }
             this.width = width;
             this.height = height;
             this.Rules = new Rules();
@@ -19103,6 +19102,9 @@ var Hello = React.createClass({displayName: "Hello",
         return new TwoDotsState_1.TwoDots.TwoDotsState(Number(this.props.width), Number(this.props.height));
     },
     needsShuffling: function () {
+        var thisFlatArray = this.thisArray();
+        for (var cell in thisFlatArray) {
+        }
     },
     thisArray: function () {
         return [].concat.apply([], this.state.Grid);
@@ -19278,7 +19280,7 @@ var Hello = React.createClass({displayName: "Hello",
             );
     }
 });
-ReactDOM.render(React.createElement(Hello, {name: "World", width: "10", height: "8"}), document.getElementById('container'));
+ReactDOM.render(React.createElement(Hello, {name: "World", width: "5", height: "5"}), document.getElementById('container'));
 
 },{"./TwoDotsState":159,"./levelEditor":161,"./scoreTable":162,"react":158,"react-dom":2}],161:[function(require,module,exports){
 var __extends = (this && this.__extends) || function (d, b) {
@@ -19409,9 +19411,9 @@ var ScoreTable = (function (_super) {
             //var short = key + " short"
             var key2 = key + "value";
             cells.push(React.createElement("td", {className: "short", key: key}, React.createElement("div", {className: key + ' cell'})));
-            cells.push(React.createElement("td", {className: "short2", key: key2}, score[key] + ' of ' + rules.amountToCollect[key]));
+            cells.push(React.createElement("td", {className: 'short2 ' + (score[key] >= rules.amountToCollect[key] ? 'completedColor' : ''), key: key2}, score[key] + ' / ' + rules.amountToCollect[key]));
         });
-        cells.push(React.createElement("td", {className: "short3", key: "turns"}, " ", 'Turns ' + turns + ' of ' + maxTurns, " "));
+        cells.push(React.createElement("td", {className: "short3", key: "turns"}, " ", 'Turns ' + turns + ' / ' + maxTurns, " "));
         return (React.createElement("table", {className: "scoreTable"}, React.createElement("tbody", null, React.createElement("tr", null, 
                 cells
                 ))));

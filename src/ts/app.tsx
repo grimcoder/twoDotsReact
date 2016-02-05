@@ -4,6 +4,8 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import ScoreTable from './scoreTable'
 import LevelEditor from './levelEditor'
+import {Levels} from './levels'
+
 import {
     Store,
     compose,
@@ -21,15 +23,13 @@ import { Action } from 'redux-actions';
 
 import {TwoDots} from './TwoDotsState'
 
-
 interface HelloWorldProps {
     name: string;
     width: string;
     height: string;
 }
 
-
-var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
+var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
     {
         path: [],
 
@@ -38,10 +38,13 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
         },
 
         needsShuffling: function () {
+            var thisFlatArray : [TwoDots.Cell] = this.thisArray();
+            for(var cell in thisFlatArray){
 
+            }
         },
 
-        thisArray: function () {
+        thisArray: function () : [TwoDots.Cell]  {
             return [].concat.apply([], this.state.Grid)
         },
 
@@ -184,14 +187,14 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
         },
         updateLevel: function (width, height, MaxTurns, limits) {
 
-            var newState : TwoDots.TwoDotsState = new TwoDots.TwoDotsState(Number(width), Number(height))
+            var newState:TwoDots.TwoDotsState = new TwoDots.TwoDotsState(Number(width), Number(height))
             newState.Rules.maxTurns = Number(MaxTurns)
             newState.Rules.amountToCollect = limits
             newState.mode = 'board'
             this.setState(newState);
         },
-        startNew: function(){
-            var newState : TwoDots.TwoDotsState = new TwoDots.TwoDotsState()
+        startNew: function () {
+            var newState:TwoDots.TwoDotsState = new TwoDots.TwoDotsState()
             newState.mode = 'board'
             this.setState(newState);
         },
@@ -242,7 +245,7 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
 
             }
 
-            else if  (this.state.mode == 'message'){
+            else if (this.state.mode == 'message') {
                 body =<section>
                     <h1>{this.state.message}</h1>
                     <button className="btn btn-danger" onClick={this.startNew}>Start new</button>
@@ -258,7 +261,7 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
     });
 
 ReactDOM.render(
-    <Hello name="World" width="10" height="8"/>,
+    <Hello name="World" width="5" height="5"/>,
     document.getElementById('container')
 );
 

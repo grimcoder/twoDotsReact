@@ -15,7 +15,6 @@ export module TwoDots {
     export var colors:[string] = ['red', 'yellow', 'brown', 'blue', 'green']
 
     export class Cell {
-        className:String = 'unselected';
         color:String = getRandomColor(colors);
         x:number
         y:number
@@ -43,7 +42,7 @@ export module TwoDots {
         }, Object())
 
 
-        constructor(public width:number = 10, public height:number = 10) {
+        constructor(public width:number = 5, public height:number = 5) {
             Array.apply(0, Array(height)).map((el, row) => {
                 this.Grid[row] = [];
                 Array.apply(0, Array(width)).map((el1, col) => {
