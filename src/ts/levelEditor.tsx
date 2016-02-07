@@ -92,8 +92,8 @@ export class LevelEditor extends React.Component<any, any> {
                 <input  className="short2"  onChange={this.changed}  type="text" ref={selectedColors[c]} value={limits[selectedColors[c]]} /> </td></tr>)
         }
 
-        return <div>
-            <div className="levelEditor h4">Level editor</div>
+        return <div className="levelEditor">
+            <div className="h4">Level editor</div>
 
             <div>
 

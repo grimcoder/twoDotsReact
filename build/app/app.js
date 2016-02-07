@@ -19037,6 +19037,16 @@ var TwoDots;
         return colors[getRandomInt(0, colors.length)];
     };
     TwoDots.colors = ['red', 'yellow', 'brown', 'blue', 'green'];
+    function shuffleArray(array) {
+        for (var i = array.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
+        }
+        return array;
+    }
+    TwoDots.shuffleArray = shuffleArray;
     var Cell = (function () {
         function Cell(x, y) {
             this.color = getRandomColor(TwoDots.colors);
@@ -19104,7 +19114,28 @@ var Hello = React.createClass({displayName: "Hello",
     needsShuffling: function () {
         var thisFlatArray = this.thisArray();
         for (var cell in thisFlatArray) {
+            if (thisFlatArray.filter(function (c) {
+                return !(c.x == thisFlatArray[cell].x && c.y == thisFlatArray[cell].y)
+                    && (Math.abs(c.x - thisFlatArray[cell].x) + Math.abs(c.y - thisFlatArray[cell].y) < 2)
+                    && thisFlatArray[cell].color == c.color;
+            }).length > 0) {
+                console.log('does not need shuffling');
+                return false;
+            }
         }
+        console.log('needs shuffling');
+        return true;
+    },
+    shuffleBoard: function () {
+        var thisFlatArray = TwoDotsState_1.TwoDots.shuffleArray(this.thisArray());
+        for (var x = 0; x < this.state.width; x++) {
+            for (var y = 0; y < this.state.height; y++) {
+                this.state.Grid[y][x] = thisFlatArray.pop();
+                this.state.Grid[y][x].x = x;
+                this.state.Grid[y][x].y = y;
+            }
+        }
+        this.setState(this.state);
     },
     thisArray: function () {
         return [].concat.apply([], this.state.Grid);
@@ -19176,6 +19207,9 @@ var Hello = React.createClass({displayName: "Hello",
         this.path = [];
         this.setState(this.state);
         this.checkResults(this.state);
+        while (this.needsShuffling()) {
+            this.shuffleBoard();
+        }
     },
     handleMouseOver: function (row, col) {
         if (!this.path || this.path.length == 0) {
@@ -19225,7 +19259,7 @@ var Hello = React.createClass({displayName: "Hello",
         this.setState(newState);
     },
     startNew: function () {
-        var newState = new TwoDotsState_1.TwoDots.TwoDotsState();
+        var newState = new TwoDotsState_1.TwoDots.TwoDotsState(Number(this.state.width), Number(this.state.height));
         newState.mode = 'board';
         this.setState(newState);
     },
@@ -19264,13 +19298,14 @@ var Hello = React.createClass({displayName: "Hello",
                             );
             })
                         )
-                    )
+                    ), 
+                    React.createElement("button", {onClick: this.shuffleBoard, className: "btn btn-default"}, "Shuffle")
                 );
         }
         else if (this.state.mode == 'message') {
             body = React.createElement("section", null, 
                     React.createElement("h1", null, this.state.message), 
-                    React.createElement("button", {className: "btn btn-danger", onClick: this.startNew}, "Start new")
+                    React.createElement("button", {className: "btn btn-danger center", onClick: this.startNew}, "Start new")
                 );
         }
         return React.createElement("div", null, 
@@ -19280,7 +19315,7 @@ var Hello = React.createClass({displayName: "Hello",
             );
     }
 });
-ReactDOM.render(React.createElement(Hello, {name: "World", width: "5", height: "5"}), document.getElementById('container'));
+ReactDOM.render(React.createElement(Hello, {name: "World", width: "3", height: "3"}), document.getElementById('container'));
 
 },{"./TwoDotsState":159,"./levelEditor":161,"./scoreTable":162,"react":158,"react-dom":2}],161:[function(require,module,exports){
 var __extends = (this && this.__extends) || function (d, b) {
@@ -19353,8 +19388,8 @@ var LevelEditor = (function (_super) {
             colorRows.push(React.createElement("tr", {key: selectedColors[c]}, React.createElement("td", {className: "short"}, React.createElement("div", {className: selectedColors[c] + ' cell'})), React.createElement("td", {className: "short2"}, 
                 React.createElement("input", {className: "short2", onChange: this.changed, type: "text", ref: selectedColors[c], value: limits[selectedColors[c]]}), " ")));
         }
-        return React.createElement("div", null, 
-            React.createElement("div", {className: "levelEditor h4"}, "Level editor"), 
+        return React.createElement("div", {className: "levelEditor"}, 
+            React.createElement("div", {className: "h4"}, "Level editor"), 
 
             React.createElement("div", null, 
 

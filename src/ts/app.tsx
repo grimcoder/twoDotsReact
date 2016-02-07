@@ -39,9 +39,38 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
 
         needsShuffling: function () {
             var thisFlatArray : [TwoDots.Cell] = this.thisArray();
-            for(var cell in thisFlatArray){
 
+            for(var cell in thisFlatArray){
+                if (thisFlatArray.filter((c)=>{
+                        return !(c.x == thisFlatArray[cell].x && c.y == thisFlatArray[cell].y)
+                            && (Math.abs(c.x - thisFlatArray[cell].x) + Math.abs(c.y - thisFlatArray[cell].y) < 2)
+                            && thisFlatArray[cell].color == c.color }).length > 0){
+
+                    console.log('does not need shuffling')
+                    return false
+                }
             }
+            console.log('needs shuffling')
+
+            return true
+
+        },
+
+
+        shuffleBoard(){
+            var thisFlatArray : [TwoDots.Cell] = TwoDots.shuffleArray(this.thisArray());
+            for (var x = 0; x < this.state.width; x++){
+
+                for (var y = 0; y < this.state.height; y++){
+
+                    this.state.Grid[y][x] = thisFlatArray.pop();
+
+                    this.state.Grid[y][x].x = x
+                    this.state.Grid[y][x].y = y
+
+                }
+            }
+            this.setState(this.state)
         },
 
         thisArray: function () : [TwoDots.Cell]  {
@@ -128,10 +157,16 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
 
         handleMouseUp: function () {
             this.state.startDrag = false
+
             this.removeDots(this.state);
             this.path = []
             this.setState(this.state);
             this.checkResults(this.state)
+
+            while (this.needsShuffling()){
+
+                this.shuffleBoard();
+            }
         },
 
         handleMouseOver: function (row, col) {
@@ -185,6 +220,7 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
             this.state.mode = 'board'
             this.setState(this.state);
         },
+
         updateLevel: function (width, height, MaxTurns, limits) {
 
             var newState:TwoDots.TwoDotsState = new TwoDots.TwoDotsState(Number(width), Number(height))
@@ -193,8 +229,9 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
             newState.mode = 'board'
             this.setState(newState);
         },
+
         startNew: function () {
-            var newState:TwoDots.TwoDotsState = new TwoDots.TwoDotsState()
+            var newState:TwoDots.TwoDotsState = new TwoDots.TwoDotsState(Number(this.state.width), Number(this.state.height))
             newState.mode = 'board'
             this.setState(newState);
         },
@@ -241,6 +278,7 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
                                 )}
                         </tbody>
                     </table>
+                    <button onClick={this.shuffleBoard} className="btn btn-default">Shuffle</button>
                 </div>
 
             }
@@ -248,7 +286,7 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
             else if (this.state.mode == 'message') {
                 body =<section>
                     <h1>{this.state.message}</h1>
-                    <button className="btn btn-danger" onClick={this.startNew}>Start new</button>
+                    <button className="btn btn-danger center" onClick={this.startNew}>Start new</button>
                 </section>
             }
             return  <div>
@@ -261,7 +299,7 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
     });
 
 ReactDOM.render(
-    <Hello name="World" width="5" height="5"/>,
+    <Hello name="World" width="3" height="3"/>,
     document.getElementById('container')
 );
 
