@@ -35,6 +35,10 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
 
         getInitialState: function () {
             return new TwoDots.TwoDotsState(Number(this.props.width), Number(this.props.height));
+            while (this.needsShuffling()){
+
+                this.shuffleBoard();
+            }
         },
 
         needsShuffling: function () {
@@ -47,11 +51,13 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
                             && thisFlatArray[cell].color == c.color }).length > 0){
 
                     console.log('does not need shuffling')
+                    this.state.mode = 'board'
                     return false
                 }
             }
             console.log('needs shuffling')
-
+            this.state.mode = 'board needsShuffling'
+            this.setState(this.state)
             return true
 
         },
@@ -60,17 +66,15 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
         shuffleBoard(){
             var thisFlatArray : [TwoDots.Cell] = TwoDots.shuffleArray(this.thisArray());
             for (var x = 0; x < this.state.width; x++){
-
                 for (var y = 0; y < this.state.height; y++){
-
                     this.state.Grid[y][x] = thisFlatArray.pop();
-
                     this.state.Grid[y][x].x = x
                     this.state.Grid[y][x].y = y
-
                 }
             }
             this.setState(this.state)
+
+            this.needsShuffling()
         },
 
         thisArray: function () : [TwoDots.Cell]  {
@@ -92,7 +96,6 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
 
             var cellsToRemove:[TwoDots.Cell]
 
-
             if (!this.isLoop()) {
                 state.score[selectedColor] += this.path.length
                 cellsToRemove = this.path
@@ -102,12 +105,10 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
                 state.score[selectedColor] += thisColorArray.length
             }
 
-
             for (var i = 0; i < state.height; i++) {
                 if (cellsToRemove.filter((cell)=> {
                         return cell.y == i
                     }).length == 0) continue;
-
 
                 for (var x:number = 0; x < state.width; x++) {
                     var cellInPath = cellsToRemove.filter((cell)=> {
@@ -133,7 +134,7 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
         checkResults: function (state:TwoDots.TwoDotsState) {
             //have we lost?
             if (state.Rules.maxTurns < state.turns) {
-                this.state.mode = 'message'
+                this.state.mode = 'board message'
                 this.state.message = 'You lost!!!'
                 this.setState(this.state)
 
@@ -143,30 +144,25 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
             if (Object.keys(state.Rules.amountToCollect).filter((key:string, i:number) => {
                     return state.Rules.amountToCollect[key] > state.score[key]
                 }).length == 0) {
-                this.state.mode = 'message'
+                this.state.mode = 'board message'
                 this.state.message = 'You won!!!'
                 this.setState(this.state)
             }
         },
 
         onMouseLeave: function () {
-            this.state.startDrag = false
             this.path = []
             this.setState(this.state);
         },
 
         handleMouseUp: function () {
-            this.state.startDrag = false
-
             this.removeDots(this.state);
+            this.needsShuffling()
             this.path = []
             this.setState(this.state);
             this.checkResults(this.state)
 
-            while (this.needsShuffling()){
 
-                this.shuffleBoard();
-            }
         },
 
         handleMouseOver: function (row, col) {
@@ -242,16 +238,32 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
 
             var state:TwoDots.TwoDotsState = this.state
 
+            var message
             var body
-            if (this.state.mode == 'editor') {
+            if (this.state.mode.indexOf('message') > -1) {
+                message =<section>
+                    <h1>{this.state.message}</h1>
+                    <button className="btn btn-danger center" onClick={this.startNew}>Start new</button>
+                </section>
+            }
+
+            if (this.state.mode.indexOf('needsShuffling') > -1) {
+                message =<section>
+                    <h1>Needs shuffling</h1>
+                    <button className="btn btn-danger center" onClick={this.shuffleBoard}>Shuffle</button>
+                </section>
+            }
+
+
+            if (this.state.mode.indexOf('editor') > -1) {
                 body =<div>
                     <button onClick={this.ShowBoard} className="btn btn-info">Show board</button>
                     <LevelEditor gridState={state} rules={state.Rules} score={state.score}
                                  updateLevel={this.updateLevel}/>
                 </div>
             }
-            else if (this.state.mode == 'board') {
-                body =<div>
+            if (this.state.mode.indexOf('board') > -1) {
+                body =<div className="levelEditor">
                     <button onClick={this.ShowLevelEditor} className="btn btn-info">Level editor</button>
                     <ScoreTable turns={state.turns} maxTurns={state.Rules.maxTurns} rules={state.Rules}
                                 score={state.score}/>
@@ -272,23 +284,16 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
 
                                     <div className={state.Grid[row][coll].color + ' cell'}></div>
                                 </td>
-
                                     )}
                             </tr>
                                 )}
                         </tbody>
                     </table>
-                    <button onClick={this.shuffleBoard} className="btn btn-default">Shuffle</button>
+                    {message}
                 </div>
 
             }
 
-            else if (this.state.mode == 'message') {
-                body =<section>
-                    <h1>{this.state.message}</h1>
-                    <button className="btn btn-danger center" onClick={this.startNew}>Start new</button>
-                </section>
-            }
             return  <div>
 
                 {body}

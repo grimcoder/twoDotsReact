@@ -19110,6 +19110,9 @@ var Hello = React.createClass({displayName: "Hello",
     path: [],
     getInitialState: function () {
         return new TwoDotsState_1.TwoDots.TwoDotsState(Number(this.props.width), Number(this.props.height));
+        while (this.needsShuffling()) {
+            this.shuffleBoard();
+        }
     },
     needsShuffling: function () {
         var thisFlatArray = this.thisArray();
@@ -19120,10 +19123,13 @@ var Hello = React.createClass({displayName: "Hello",
                     && thisFlatArray[cell].color == c.color;
             }).length > 0) {
                 console.log('does not need shuffling');
+                this.state.mode = 'board';
                 return false;
             }
         }
         console.log('needs shuffling');
+        this.state.mode = 'board needsShuffling';
+        this.setState(this.state);
         return true;
     },
     shuffleBoard: function () {
@@ -19136,6 +19142,7 @@ var Hello = React.createClass({displayName: "Hello",
             }
         }
         this.setState(this.state);
+        this.needsShuffling();
     },
     thisArray: function () {
         return [].concat.apply([], this.state.Grid);
@@ -19182,7 +19189,7 @@ var Hello = React.createClass({displayName: "Hello",
     checkResults: function (state) {
         //have we lost?
         if (state.Rules.maxTurns < state.turns) {
-            this.state.mode = 'message';
+            this.state.mode = 'board message';
             this.state.message = 'You lost!!!';
             this.setState(this.state);
             return;
@@ -19191,25 +19198,21 @@ var Hello = React.createClass({displayName: "Hello",
         if (Object.keys(state.Rules.amountToCollect).filter(function (key, i) {
             return state.Rules.amountToCollect[key] > state.score[key];
         }).length == 0) {
-            this.state.mode = 'message';
+            this.state.mode = 'board message';
             this.state.message = 'You won!!!';
             this.setState(this.state);
         }
     },
     onMouseLeave: function () {
-        this.state.startDrag = false;
         this.path = [];
         this.setState(this.state);
     },
     handleMouseUp: function () {
-        this.state.startDrag = false;
         this.removeDots(this.state);
+        this.needsShuffling();
         this.path = [];
         this.setState(this.state);
         this.checkResults(this.state);
-        while (this.needsShuffling()) {
-            this.shuffleBoard();
-        }
     },
     handleMouseOver: function (row, col) {
         if (!this.path || this.path.length == 0) {
@@ -19268,15 +19271,28 @@ var Hello = React.createClass({displayName: "Hello",
         var isLoop = this.isLoop();
         var lastColor = this.path.length > 0 ? this.path[this.path.length - 1].color : undefined;
         var state = this.state;
+        var message;
         var body;
-        if (this.state.mode == 'editor') {
+        if (this.state.mode.indexOf('message') > -1) {
+            message = React.createElement("section", null, 
+                    React.createElement("h1", null, this.state.message), 
+                    React.createElement("button", {className: "btn btn-danger center", onClick: this.startNew}, "Start new")
+                );
+        }
+        if (this.state.mode.indexOf('needsShuffling') > -1) {
+            message = React.createElement("section", null, 
+                    React.createElement("h1", null, "Needs shuffling"), 
+                    React.createElement("button", {className: "btn btn-danger center", onClick: this.shuffleBoard}, "Shuffle")
+                );
+        }
+        if (this.state.mode.indexOf('editor') > -1) {
             body = React.createElement("div", null, 
                     React.createElement("button", {onClick: this.ShowBoard, className: "btn btn-info"}, "Show board"), 
                     React.createElement(levelEditor_1.default, {gridState: state, rules: state.Rules, score: state.score, updateLevel: this.updateLevel})
                 );
         }
-        else if (this.state.mode == 'board') {
-            body = React.createElement("div", null, 
+        if (this.state.mode.indexOf('board') > -1) {
+            body = React.createElement("div", {className: "levelEditor"}, 
                     React.createElement("button", {onClick: this.ShowLevelEditor, className: "btn btn-info"}, "Level editor"), 
                     React.createElement(scoreTable_1.default, {turns: state.turns, maxTurns: state.Rules.maxTurns, rules: state.Rules, score: state.score}), 
 
@@ -19299,13 +19315,7 @@ var Hello = React.createClass({displayName: "Hello",
             })
                         )
                     ), 
-                    React.createElement("button", {onClick: this.shuffleBoard, className: "btn btn-default"}, "Shuffle")
-                );
-        }
-        else if (this.state.mode == 'message') {
-            body = React.createElement("section", null, 
-                    React.createElement("h1", null, this.state.message), 
-                    React.createElement("button", {className: "btn btn-danger center", onClick: this.startNew}, "Start new")
+                    message
                 );
         }
         return React.createElement("div", null, 
