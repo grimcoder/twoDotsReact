@@ -19074,7 +19074,6 @@ var TwoDots;
             this.Rules = new Rules();
             this.mode = 'board';
             this.Grid = [];
-            this.startDrag = false;
             this.turns = 0;
             this.score = TwoDots.colors.reduce(function (total, color) {
                 total[color] = 0;
@@ -19254,10 +19253,7 @@ var Hello = React.createClass({displayName: "Hello",
         this.state.mode = 'board';
         this.setState(this.state);
     },
-    updateLevel: function (width, height, MaxTurns, limits) {
-        var newState = new TwoDotsState_1.TwoDots.TwoDotsState(Number(width), Number(height));
-        newState.Rules.maxTurns = Number(MaxTurns);
-        newState.Rules.amountToCollect = limits;
+    updateLevel: function (newState) {
         newState.mode = 'board';
         this.setState(newState);
     },
@@ -19288,13 +19284,13 @@ var Hello = React.createClass({displayName: "Hello",
         if (this.state.mode.indexOf('editor') > -1) {
             body = React.createElement("div", null, 
                     React.createElement("button", {onClick: this.ShowBoard, className: "btn btn-info"}, "Show board"), 
-                    React.createElement(levelEditor_1.default, {gridState: state, rules: state.Rules, score: state.score, updateLevel: this.updateLevel})
+                    React.createElement(levelEditor_1.default, {gridState: state, updateLevel: this.updateLevel})
                 );
         }
         if (this.state.mode.indexOf('board') > -1) {
-            body = React.createElement("div", {className: "levelEditor"}, 
+            body = React.createElement("div", null, 
                     React.createElement("button", {onClick: this.ShowLevelEditor, className: "btn btn-info"}, "Level editor"), 
-                    React.createElement(scoreTable_1.default, {turns: state.turns, maxTurns: state.Rules.maxTurns, rules: state.Rules, score: state.score}), 
+                        React.createElement(scoreTable_1.default, {turns: state.turns, maxTurns: state.Rules.maxTurns, rules: state.Rules, score: state.score}), 
 
                     React.createElement("table", {className: "mainGrid", onMouseLeave: this.onMouseLeave}, 
                         React.createElement("tbody", null, 
@@ -19318,7 +19314,7 @@ var Hello = React.createClass({displayName: "Hello",
                     message
                 );
         }
-        return React.createElement("div", null, 
+        return React.createElement("div", {className: "shell"}, 
 
                 body
 
@@ -19340,65 +19336,77 @@ var LevelEditor = (function (_super) {
     __extends(LevelEditor, _super);
     function LevelEditor(props) {
         _super.call(this, props);
-        var rules = this.props.rules;
         var state = this.props.gridState;
-        var amountToCollect = rules.amountToCollect;
         this.changed = this.changed.bind(this);
         this.update = this.update.bind(this);
         this.changedcolorRules = this.changedcolorRules.bind(this);
-        this.state = {
-            amountToCollect: amountToCollect,
-            width: state.width,
-            height: state.height,
-            MaxTurns: rules.maxTurns };
+        this.changeColor = this.changeColor.bind(this);
+        this.state = state;
     }
     LevelEditor.prototype.changedcolorRules = function () {
-        var limits = {};
+        var _this = this;
         var colorLimit = this.refs['colorRules'].value;
         TwoDotsState_1.TwoDots.colors.slice(0, Number(colorLimit)).map(function (color) {
-            limits[color] = 5;
+            _this.state.Rules.amountToCollect[color] = 5;
         });
-        this.setState({ amountToCollect: limits });
+        this.setState(this.state);
     };
     LevelEditor.prototype.changed = function () {
         var width = (this.refs['width']).value;
         var height = this.refs['height'].value;
         var MaxTurns = this.refs['MaxTurns'].value;
-        var limits = {};
-        for (var color in this.state.amountToCollect) {
-            limits[color] = this.refs[color].value;
+        var newState = new TwoDotsState_1.TwoDots.TwoDotsState(Number(width), Number(height));
+        newState.Rules.maxTurns = Number(MaxTurns);
+        for (var color in this.state.Rules.amountToCollect) {
+            newState.Rules.amountToCollect[color] = Number(this.refs[color].value);
         }
-        this.setState({
-            width: width,
-            height: height,
-            MaxTurns: MaxTurns,
-            amountToCollect: limits
-        });
+        this.setState(newState);
+    };
+    LevelEditor.prototype.changeColor = function (row, coll) {
+        var nextColor = (TwoDotsState_1.TwoDots.colors.indexOf(this.state.Grid[row][coll].color) + 1) % TwoDotsState_1.TwoDots.colors.length;
+        this.state.Grid[row][coll].color = TwoDotsState_1.TwoDots.colors[nextColor];
+        this.setState(this.state);
     };
     LevelEditor.prototype.update = function () {
-        var width = (this.refs['width']).value;
-        var height = this.refs['height'].value;
-        var MaxTurns = this.refs['MaxTurns'].value;
-        var limits = {};
-        for (var color in this.state.amountToCollect) {
-            limits[color] = this.refs[color].value;
-        }
         var updateLevel = this.props.updateLevel;
-        updateLevel(width, height, MaxTurns, limits);
+        updateLevel(this.state);
     };
     LevelEditor.prototype.render = function () {
-        var colorRules = Object.keys(this.state.amountToCollect).length.toString();
-        var limits = this.state.amountToCollect;
+        var _this = this;
+        var colorRules = Object.keys(this.state.Rules.amountToCollect).length.toString();
+        var limits = this.state.Rules.amountToCollect;
         var width = this.state.width;
         var height = this.state.height;
-        var MaxTurns = this.state.MaxTurns;
+        var MaxTurns = this.state.Rules.maxTurns;
         var selectedColors = Object.keys(limits);
         var colorRows = [];
         for (var c in selectedColors) {
             colorRows.push(React.createElement("tr", {key: selectedColors[c]}, React.createElement("td", {className: "short"}, React.createElement("div", {className: selectedColors[c] + ' cell'})), React.createElement("td", {className: "short2"}, 
                 React.createElement("input", {className: "short2", onChange: this.changed, type: "text", ref: selectedColors[c], value: limits[selectedColors[c]]}), " ")));
         }
-        return React.createElement("div", {className: "levelEditor"}, 
+        var body;
+        var state = this.state;
+        body = React.createElement("div", null, 
+
+
+            React.createElement("table", {className: "mainGrid"}, 
+                React.createElement("tbody", null, 
+                    Array.apply(0, Array(state.height)).map(function (el, row) {
+            return React.createElement("tr", {className: "border", key: row}, 
+
+                        Array.apply(0, Array(state.width)).map(function (el1, coll) {
+                return React.createElement("td", {key: coll, className: "unselected", onClick: _this.changeColor.bind(null, row, coll)}, 
+
+                            React.createElement("div", {className: state.Grid[row][coll].color + ' cell'})
+                        );
+            })
+                    );
+        })
+                )
+            )
+
+        );
+        return React.createElement("div", null, 
             React.createElement("div", {className: "h4"}, "Level editor"), 
 
             React.createElement("div", null, 
@@ -19421,6 +19429,7 @@ var LevelEditor = (function (_super) {
                 )
             ), 
             React.createElement("br", null), 
+                body, 
                 React.createElement("button", {onClick: this.update, className: "btn"}, "Update")
         );
     };

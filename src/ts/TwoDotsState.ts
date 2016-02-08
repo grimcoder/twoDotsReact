@@ -44,7 +44,6 @@ export module TwoDots {
         Rules:Rules = new Rules()
         mode: string = 'board'
         Grid:Cell[][] = []
-        startDrag:boolean = false
         turns:number = 0
         score:{[color: string] : number} = colors.reduce((total, color)=> {
             total[color] = 0

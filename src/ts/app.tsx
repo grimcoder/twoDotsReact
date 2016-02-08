@@ -217,13 +217,11 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
             this.setState(this.state);
         },
 
-        updateLevel: function (width, height, MaxTurns, limits) {
+        updateLevel: function (newState: TwoDots.TwoDotsState) {
 
-            var newState:TwoDots.TwoDotsState = new TwoDots.TwoDotsState(Number(width), Number(height))
-            newState.Rules.maxTurns = Number(MaxTurns)
-            newState.Rules.amountToCollect = limits
             newState.mode = 'board'
             this.setState(newState);
+
         },
 
         startNew: function () {
@@ -258,14 +256,14 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
             if (this.state.mode.indexOf('editor') > -1) {
                 body =<div>
                     <button onClick={this.ShowBoard} className="btn btn-info">Show board</button>
-                    <LevelEditor gridState={state} rules={state.Rules} score={state.score}
+                    <LevelEditor gridState={state}
                                  updateLevel={this.updateLevel}/>
                 </div>
             }
             if (this.state.mode.indexOf('board') > -1) {
-                body =<div className="levelEditor">
+                body =<div>
                     <button onClick={this.ShowLevelEditor} className="btn btn-info">Level editor</button>
-                    <ScoreTable turns={state.turns} maxTurns={state.Rules.maxTurns} rules={state.Rules}
+                        <ScoreTable turns={state.turns} maxTurns={state.Rules.maxTurns} rules={state.Rules}
                                 score={state.score}/>
 
                     <table className="mainGrid" onMouseLeave={this.onMouseLeave}>
@@ -294,7 +292,7 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
 
             }
 
-            return  <div>
+            return  <div className="shell">
 
                 {body}
 
