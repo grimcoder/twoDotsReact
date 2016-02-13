@@ -19,7 +19,9 @@ class ScoreTable extends React.Component<any, any> {
             //var short = key + " short"
             var key2 = key + "value"
             cells.push(<td className="short" key={key}><div className={key + ' cell'} ></div></td>  )
-            cells.push(<td className={'short2 ' + (score[key] >= rules.amountToCollect[key] ? 'completedColor' : '')}  key={key2}>{score[key] + ' / ' + rules.amountToCollect[key]}</td>)
+            cells.push(<td className={'short2 ' + (score[key] >= rules.amountToCollect[key] ? 'completedColor' : '')}
+                           key={key2}>{score[key] + ' / ' +
+                rules.amountToCollect[key]}</td>)
         })
 
         cells.push(<td className="short3"  key='turns'> {'Turns ' + turns + ' / ' + maxTurns} </td>)

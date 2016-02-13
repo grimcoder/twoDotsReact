@@ -19465,7 +19465,8 @@ var ScoreTable = (function (_super) {
             //var short = key + " short"
             var key2 = key + "value";
             cells.push(React.createElement("td", {className: "short", key: key}, React.createElement("div", {className: key + ' cell'})));
-            cells.push(React.createElement("td", {className: 'short2 ' + (score[key] >= rules.amountToCollect[key] ? 'completedColor' : ''), key: key2}, score[key] + ' / ' + rules.amountToCollect[key]));
+            cells.push(React.createElement("td", {className: 'short2 ' + (score[key] >= rules.amountToCollect[key] ? 'completedColor' : ''), key: key2}, score[key] + ' / ' +
+                rules.amountToCollect[key]));
         });
         cells.push(React.createElement("td", {className: "short3", key: "turns"}, " ", 'Turns ' + turns + ' / ' + maxTurns, " "));
         return (React.createElement("table", {className: "scoreTable"}, React.createElement("tbody", null, React.createElement("tr", null, 
