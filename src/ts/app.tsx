@@ -5,6 +5,9 @@ import * as ReactDOM from 'react-dom';
 import ScoreTable from './scoreTable'
 import LevelEditor from './levelEditor'
 import {Levels} from './levels'
+import  {Home} from './home'
+
+import  {SelectLevel} from './selectLevel'
 
 import {
     Store,
@@ -230,6 +233,12 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
             this.setState(newState);
         },
 
+        levelSelected: function(){
+            this.state.mode = 'selectLevel'
+            this.setState(this.state);
+        },
+
+
         render: function () {
             var isLoop = this.isLoop()
             var lastColor = this.path.length > 0 ? this.path[this.path.length - 1].color : undefined
@@ -260,6 +269,7 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
                                  updateLevel={this.updateLevel}/>
                 </div>
             }
+
             if (this.state.mode.indexOf('board') > -1) {
                 body =<div>
                     <button onClick={this.ShowLevelEditor} className="btn btn-info">Level editor</button>
@@ -292,11 +302,17 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
 
             }
 
-            return  <div className="shell">
 
-                {body}
 
-            </div>;
+            if (this.state.mode.indexOf('selectLevel') > -1) {
+                body = <SelectLevel  />
+            }
+            else  {
+                body = <Home selectLevel={this.levelSelected} selectEditor={this.ShowLevelEditor} />
+            }
+            return body
+
+
         }
 
     });

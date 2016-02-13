@@ -7852,7 +7852,10 @@ var ReactDOMOption = {
       }
     });
 
-    nativeProps.children = content;
+    if (content) {
+      nativeProps.children = content;
+    }
+
     return nativeProps;
   }
 
@@ -14021,7 +14024,7 @@ module.exports = ReactUpdates;
 
 'use strict';
 
-module.exports = '0.14.6';
+module.exports = '0.14.7';
 },{}],87:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -15116,6 +15119,7 @@ var warning = require('fbjs/lib/warning');
  */
 var EventInterface = {
   type: null,
+  target: null,
   // currentTarget is set when dispatching; no use in copying it here
   currentTarget: emptyFunction.thatReturnsNull,
   eventPhase: null,
@@ -15149,8 +15153,6 @@ function SyntheticEvent(dispatchConfig, dispatchMarker, nativeEvent, nativeEvent
   this.dispatchConfig = dispatchConfig;
   this.dispatchMarker = dispatchMarker;
   this.nativeEvent = nativeEvent;
-  this.target = nativeEventTarget;
-  this.currentTarget = nativeEventTarget;
 
   var Interface = this.constructor.Interface;
   for (var propName in Interface) {
@@ -15161,7 +15163,11 @@ function SyntheticEvent(dispatchConfig, dispatchMarker, nativeEvent, nativeEvent
     if (normalize) {
       this[propName] = normalize(nativeEvent);
     } else {
-      this[propName] = nativeEvent[propName];
+      if (propName === 'target') {
+        this.target = nativeEventTarget;
+      } else {
+        this[propName] = nativeEvent[propName];
+      }
     }
   }
 
@@ -19104,6 +19110,8 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 var scoreTable_1 = require('./scoreTable');
 var levelEditor_1 = require('./levelEditor');
+var home_1 = require('./home');
+var selectLevel_1 = require('./selectLevel');
 var TwoDotsState_1 = require('./TwoDotsState');
 var Hello = React.createClass({displayName: "Hello",
     path: [],
@@ -19262,6 +19270,10 @@ var Hello = React.createClass({displayName: "Hello",
         newState.mode = 'board';
         this.setState(newState);
     },
+    levelSelected: function () {
+        this.state.mode = 'selectLevel';
+        this.setState(this.state);
+    },
     render: function () {
         var _this = this;
         var isLoop = this.isLoop();
@@ -19314,16 +19326,46 @@ var Hello = React.createClass({displayName: "Hello",
                     message
                 );
         }
-        return React.createElement("div", {className: "shell"}, 
-
-                body
-
-            );
+        if (this.state.mode.indexOf('selectLevel') > -1) {
+            body = React.createElement(selectLevel_1.SelectLevel, null);
+        }
+        else {
+            body = React.createElement(home_1.Home, {selectLevel: this.levelSelected, selectEditor: this.ShowLevelEditor});
+        }
+        return body;
     }
 });
 ReactDOM.render(React.createElement(Hello, {name: "World", width: "3", height: "3"}), document.getElementById('container'));
 
-},{"./TwoDotsState":159,"./levelEditor":161,"./scoreTable":162,"react":158,"react-dom":2}],161:[function(require,module,exports){
+},{"./TwoDotsState":159,"./home":161,"./levelEditor":162,"./scoreTable":163,"./selectLevel":164,"react":158,"react-dom":2}],161:[function(require,module,exports){
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var React = require('react');
+var Home = (function (_super) {
+    __extends(Home, _super);
+    function Home() {
+        _super.apply(this, arguments);
+    }
+    Home.prototype.render = function () {
+        return React.createElement("div", {className: "main"}, 
+            React.createElement("img", {src: "images/Splash%20screen%20no%20buttons.png"}), 
+
+                React.createElement("div", {onClick: this.props.selectLevel, className: "playbutton"}), 
+
+                React.createElement("div", {onClick: this.props.selectEditor, className: "editorbutton"})
+
+        );
+    };
+    return Home;
+})(React.Component);
+exports.Home = Home;
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = Home;
+
+},{"react":158}],162:[function(require,module,exports){
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -19439,7 +19481,7 @@ exports.LevelEditor = LevelEditor;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = LevelEditor;
 
-},{"./TwoDotsState":159,"react":158}],162:[function(require,module,exports){
+},{"./TwoDotsState":159,"react":158}],163:[function(require,module,exports){
 /**
  * Created by taraskovtun on 1/29/16.
  */
@@ -19477,5 +19519,42 @@ var ScoreTable = (function (_super) {
 })(React.Component);
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = ScoreTable;
+
+},{"react":158}],164:[function(require,module,exports){
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var React = require('react');
+var SelectLevel = (function (_super) {
+    __extends(SelectLevel, _super);
+    function SelectLevel() {
+        _super.apply(this, arguments);
+    }
+    SelectLevel.prototype.render = function () {
+        return React.createElement("div", {className: "main"}, 
+            React.createElement("img", {src: "images/exportlevelbkg.png"}), 
+                React.createElement("div", {className: "backbutton"}), 
+                React.createElement("div", {className: "levels"}, 
+                    React.createElement("table", null, 
+                        React.createElement("tbody", null, 
+                        React.createElement("tr", null, 
+                            React.createElement("td", null, 
+                                React.createElement("div", {className: "level", dangerouslySetInnerHTML: { __html: '<svg><circle cx="26" cy="26" r="24" stroke="white" stroke-width="4" fill="transparent"/><text x="26" y="26" fill="white" font-family="Verdana"  text-anchor="middle" alignment-baseline="middle" font-size="18px" font-weight="bold">1</text></svg>'}}
+
+                                )
+                            )
+
+                        ))
+                    )
+                )
+        );
+    };
+    return SelectLevel;
+})(React.Component);
+exports.SelectLevel = SelectLevel;
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = SelectLevel;
 
 },{"react":158}]},{},[160]);

@@ -2,15 +2,12 @@ var gulp = require("gulp");
 var ts = require("gulp-typescript");
 var babel = require("gulp-babel");
 var rename = require("gulp-rename");
-
-
 var browserify = require('browserify');
 var vinylSourceStream = require('vinyl-source-stream');
 var vinylBuffer = require('vinyl-buffer');
 var reactify = require('reactify');
 var htmlMinifier = require('gulp-html-minifier');
 var uglify = require('gulp-uglify');
-
 
 
 gulp.task('js-development', function () {
@@ -26,6 +23,14 @@ gulp.task('html-development', function () {
 
      gulp
         .src('./src/*.css')
+        .pipe(gulp.dest('./build'));
+
+     gulp
+        .src('./src/**/*.css')
+        .pipe(gulp.dest('./build'));
+
+     gulp
+        .src('./src/**/*.png')
         .pipe(gulp.dest('./build'));
 
     return gulp
@@ -67,10 +72,12 @@ gulp.task('js-development', ['ts-development'], function () {
 
 
 gulp.task('watch', function () {
+
     gulp.watch('./src/ts/**/*.ts', ['ts-development','js-development']);
     gulp.watch('./src/ts/**/*.tsx', ['ts-development','js-development']);
     gulp.watch('./src/**/*.html', ['html-development']);
     gulp.watch('./src/**/*.css', ['html-development']);
+
 });
 
 
