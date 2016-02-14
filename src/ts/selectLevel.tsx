@@ -12,8 +12,13 @@ export class SelectLevel extends React.Component<any, any> {
                         <tbody>
                         <tr>
                             <td>
-                                <div  className="level" dangerouslySetInnerHTML={{__html: '<svg><circle cx="26" cy="26" r="24" stroke="white" stroke-width="4" fill="transparent"/><text x="26" y="26" fill="white" font-family="Verdana"  text-anchor="middle" alignment-baseline="middle" font-size="18px" font-weight="bold">1</text></svg>'}}>
-
+                                <div  className="level">
+                                    <svg>
+                                        <circle cx="26" cy="26" r="24" stroke="white" strokeWidth="4" fill="transparent"/>
+                                        <text x="26" y="32" fill="white" fontFamily="Verdana"  textAnchor="middle" alignment-baseline="middle"
+                                              fontSize="18px" font-weight="bold">1
+                                        </text>
+                                    </svg>
                                 </div>
                             </td>
 

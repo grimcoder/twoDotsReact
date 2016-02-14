@@ -63,6 +63,12 @@ gulp.task('ts-development', function () {
 
 
 gulp.task('js-development', ['ts-development'], function () {
+     browserify(__dirname + "/tmp/ts/appNew.js")
+        .transform(reactify)
+        .bundle()
+        .pipe(vinylSourceStream('appNew.js'))
+        .pipe(gulp.dest('./build/app/'));
+
     return browserify(__dirname + "/tmp/ts/app.js")
         .transform(reactify)
         .bundle()
