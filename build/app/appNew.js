@@ -19281,7 +19281,6 @@ var Hello = React.createClass({displayName: "Hello",
         this.setState(this.state);
     },
     render: function () {
-        var _this = this;
         var isLoop = this.isLoop();
         var lastColor = this.path.length > 0 ? this.path[this.path.length - 1].color : undefined;
         var state = this.state;
@@ -19306,35 +19305,30 @@ var Hello = React.createClass({displayName: "Hello",
                 );
         }
         if (this.state.mode.indexOf('board') > -1) {
+            var circles = [];
+            Array.apply(0, Array(state.height)).map(function (el, row) {
+                Array.apply(0, Array(state.width)).map(function (el1, coll) {
+                    circles.push(React.createElement("circle", {cx: 10 + coll * 40, cy: 10 + row * 40, r: "10", strokeWidth: "0", fill: state.Grid[row][coll].color}));
+                });
+            });
             body =
                 React.createElement("div", {className: "main"}, 
                         React.createElement("img", {src: "images/Playground%20bkg.png"}), 
-                            React.createElement("div", {className: "backbutton"}), 
-                            React.createElement("div", null, 
+                        React.createElement("div", {className: "backbutton"}), 
+                        React.createElement("div", null, 
 
-                        React.createElement(scoreTable_1.default, {turns: state.turns, maxTurns: state.Rules.maxTurns, rules: state.Rules, score: state.score}), 
+                            React.createElement(scoreTable_1.default, {turns: state.turns, maxTurns: state.Rules.maxTurns, rules: state.Rules, score: state.score}), 
 
-                    React.createElement("table", {className: "mainGrid", onMouseLeave: this.onMouseLeave}, 
-                        React.createElement("tbody", null, 
-                            Array.apply(0, Array(state.height)).map(function (el, row) {
-                    return React.createElement("tr", {className: "border", key: row}, 
+                            React.createElement("div", {className: "grid"}, 
+                                React.createElement("svg", {height: "400", width: "60"}, 
 
-                                Array.apply(0, Array(state.width)).map(function (el1, coll) {
-                        return React.createElement("td", {key: coll, className: _this.path.filter(function (cell) {
-                            return (cell.x == coll && cell.y == row)
-                                || (isLoop && state.Grid[row][coll].color == lastColor);
-                        }).length == 0
-                            ? 'unselected' : 'selected', onMouseUp: _this.handleMouseUp, onMouseOver: _this.handleMouseOver.bind(null, row, coll, event), onMouseDown: _this.handleMouseDown.bind(null, row, coll)}, 
+                                    circles
 
-                                    React.createElement("div", {className: state.Grid[row][coll].color + ' cell'})
-                                );
-                    })
-                            );
-                })
-                        )
-                    ), 
-                    message
-                ), 
+                                )
+                            ), 
+
+                            message
+                        ), 
                         React.createElement(turnsLeft_1.default, {turns: state.turns, maxTurns: state.Rules.maxTurns, rules: state.Rules, score: state.score})
                     );
         }
@@ -19499,21 +19493,25 @@ var Levels;
     var level1 = {
         "width": 2,
         "height": 6,
-        "Rules": { "maxTurns": 10, "amountToCollect": { "red": 3, "yellow": 6, "blue": 4 } },
-        "mode": "board",
-        "Grid": [[{ "color": "blue", "x": 0, "y": 0 }, { "color": "blue", "x": 1, "y": 0 }], [{
-                    "color": "brown",
+        "Rules": { "maxTurns": 8, "amountToCollect": { "red": 5, "yellow": 5, "blue": 5, "brown": 5 } },
+        "mode": "editor",
+        "Grid": [[{ "color": "red", "x": 0, "y": 0 }, { "color": "red", "x": 1, "y": 0 }], [{
+                    "color": "red",
                     "x": 0,
                     "y": 1
-                }, { "color": "blue", "x": 1, "y": 1 }], [{ "color": "blue", "x": 0, "y": 2 }, {
-                    "color": "brown",
+                }, { "color": "red", "x": 1, "y": 1 }], [{ "color": "blue", "x": 0, "y": 2 }, {
+                    "color": "blue",
                     "x": 1,
                     "y": 2
-                }], [{ "color": "blue", "x": 0, "y": 3 }, { "color": "yellow", "x": 1, "y": 3 }], [{
-                    "color": "yellow",
+                }], [{ "color": "blue", "x": 0, "y": 3 }, { "color": "blue", "x": 1, "y": 3 }], [{
+                    "color": "brown",
                     "x": 0,
                     "y": 4
-                }, { "color": "blue", "x": 1, "y": 4 }], [{ "color": "red", "x": 0, "y": 5 }, { "color": "blue", "x": 1, "y": 5 }]],
+                }, { "color": "brown", "x": 1, "y": 4 }], [{ "color": "brown", "x": 0, "y": 5 }, {
+                    "color": "brown",
+                    "x": 1,
+                    "y": 5
+                }]],
         "turns": 0,
         "score": { "red": 0, "yellow": 0, "brown": 0, "blue": 0, "green": 0 }
     };

@@ -8,7 +8,7 @@ export module TwoDots {
         return Math.floor(Math.random() * (max - min)) + min;
     }
 
-    var getRandomColor = (colors:[String]):String => {
+    var getRandomColor = (colors:[string]):string => {
         return colors[getRandomInt(0, colors.length)];
     }
 
@@ -25,7 +25,7 @@ export module TwoDots {
     }
 
     export class Cell {
-        color:String = getRandomColor(colors);
+        color:string = getRandomColor(colors);
         x:number
         y:number
 

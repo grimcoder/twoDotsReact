@@ -33,7 +33,7 @@ interface HelloWorldProps {
     height: string;
 }
 
-var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
+var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
     {
         path: [],
 
@@ -44,13 +44,14 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
         },
 
         needsShuffling: function () {
-            var thisFlatArray : [TwoDots.Cell] = this.thisArray();
+            var thisFlatArray:[TwoDots.Cell] = this.thisArray();
 
-            for(var cell in thisFlatArray){
-                if (thisFlatArray.filter((c)=>{
+            for (var cell in thisFlatArray) {
+                if (thisFlatArray.filter((c)=> {
                         return !(c.x == thisFlatArray[cell].x && c.y == thisFlatArray[cell].y)
                             && (Math.abs(c.x - thisFlatArray[cell].x) + Math.abs(c.y - thisFlatArray[cell].y) < 2)
-                            && thisFlatArray[cell].color == c.color }).length > 0){
+                            && thisFlatArray[cell].color == c.color
+                    }).length > 0) {
 
                     console.log('does not need shuffling')
                     this.state.mode = 'board'
@@ -66,9 +67,9 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
 
 
         shuffleBoard(){
-            var thisFlatArray : [TwoDots.Cell] = TwoDots.shuffleArray(this.thisArray());
-            for (var x = 0; x < this.state.width; x++){
-                for (var y = 0; y < this.state.height; y++){
+            var thisFlatArray:[TwoDots.Cell] = TwoDots.shuffleArray(this.thisArray());
+            for (var x = 0; x < this.state.width; x++) {
+                for (var y = 0; y < this.state.height; y++) {
                     this.state.Grid[y][x] = thisFlatArray.pop();
                     this.state.Grid[y][x].x = x
                     this.state.Grid[y][x].y = y
@@ -79,7 +80,7 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
             this.needsShuffling()
         },
 
-        thisArray: function () : [TwoDots.Cell]  {
+        thisArray: function ():[TwoDots.Cell] {
             return [].concat.apply([], this.state.Grid)
         },
 
@@ -219,7 +220,7 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
             this.setState(this.state);
         },
 
-        updateLevel: function (newState: TwoDots.TwoDotsState) {
+        updateLevel: function (newState:TwoDots.TwoDotsState) {
 
             newState.mode = 'board'
             this.setState(newState);
@@ -232,13 +233,13 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
             this.setState(newState);
         },
 
-        selectLevel: function(){
+        selectLevel: function () {
             this.state.mode = 'selectLevel'
             this.setState(this.state);
         },
 
 
-        levelSelected: function(level){
+        levelSelected: function (level) {
             this.state = Levels.levels[level]
             this.state.mode = 'board'
             this.setState(this.state);
@@ -276,50 +277,49 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
             }
 
             if (this.state.mode.indexOf('board') > -1) {
+
+                var circles = []
+                    Array.apply(0, Array(state.height)).map((el, row) =>{
+                        Array.apply(0, Array(state.width)).map((el1, coll) => {
+
+                            circles.push(<circle  cx={10 + coll * 40} cy={10 + row * 40} r="10"
+                                            strokeWidth="0"
+                                            fill={state.Grid[row][coll].color} />)
+
+                        })}
+                    )
+
                 body =
                     <div className="main">
-                        <img src="images/Playground%20bkg.png" />
-                            <div  className="backbutton"></div>
-                            <div>
+                        <img src="images/Playground%20bkg.png"/>
+                        <div className="backbutton"></div>
+                        <div>
 
-                        <ScoreTable turns={state.turns} maxTurns={state.Rules.maxTurns} rules={state.Rules}
-                                score={state.score}/>
+                            <ScoreTable turns={state.turns} maxTurns={state.Rules.maxTurns} rules={state.Rules}
+                                        score={state.score}/>
 
-                    <table className="mainGrid" onMouseLeave={this.onMouseLeave}>
-                        <tbody>
-                            {Array.apply(0, Array(state.height)).map((el, row) =>
-                            <tr className="border" key={row}>
+                            <div className="grid">
+                                <svg height="400" width="60">
 
-                                {Array.apply(0, Array(state.width)).map((el1, coll) =>
-                                <td key={coll} className={this.path.filter((cell)=>{return (cell.x == coll && cell.y == row)
-                                    || (isLoop && state.Grid[row][coll].color == lastColor)}).length == 0
-                                    ? 'unselected' : 'selected'}
+                                    {circles}
 
-                                    onMouseUp={this.handleMouseUp}
-                                    onMouseOver={this.handleMouseOver.bind(null, row, coll, event)}
-                                    onMouseDown={this.handleMouseDown.bind(null, row, coll)}>
+                                </svg>
+                            </div>
 
-                                    <div className={state.Grid[row][coll].color + ' cell'}></div>
-                                </td>
-                                    )}
-                            </tr>
-                                )}
-                        </tbody>
-                    </table>
-                    {message}
-                </div>
+                            {message}
+                        </div>
                         <TurnsLeft turns={state.turns} maxTurns={state.Rules.maxTurns} rules={state.Rules}
-                                    score={state.score}/>
+                                   score={state.score}/>
                     </div>
             }
 
 
             if (this.state.mode.indexOf('selectLevel') > -1) {
-                body = <SelectLevel levelSelected={this.levelSelected} />
+                body = <SelectLevel levelSelected={this.levelSelected}/>
             }
 
-            if (this.state.mode.indexOf('home') > -1)  {
-                body = <Home selectLevel={this.selectLevel} selectEditor={this.ShowLevelEditor} />
+            if (this.state.mode.indexOf('home') > -1) {
+                body = <Home selectLevel={this.selectLevel} selectEditor={this.ShowLevelEditor}/>
             }
             return body
 

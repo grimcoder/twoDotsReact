@@ -103,16 +103,20 @@ div.score {
     height: 48px;
 }
 
+div.score table{
+    width: 340px;
+}
 div.score tr{
     height: 24px;
     font-family: Montserrat-Bold, Verdana;
     font-size: 18px;
     color: #FFFFFF;
     line-height: 22px;
+
 }
 
 div.score td{
-    width: 55px;
+
     text-align: center;
 }
 
