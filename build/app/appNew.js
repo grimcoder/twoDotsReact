@@ -19109,17 +19109,18 @@ var TwoDots;
 var React = require('react');
 var ReactDOM = require('react-dom');
 var scoreTable_1 = require('./scoreTable');
+var turnsLeft_1 = require('./turnsLeft');
 var levelEditor_1 = require('./levelEditor');
+var levels_1 = require('./levels');
 var home_1 = require('./home');
 var selectLevel_1 = require('./selectLevel');
 var TwoDotsState_1 = require('./TwoDotsState');
 var Hello = React.createClass({displayName: "Hello",
     path: [],
     getInitialState: function () {
-        return new TwoDotsState_1.TwoDots.TwoDotsState(Number(this.props.width), Number(this.props.height));
-        while (this.needsShuffling()) {
-            this.shuffleBoard();
-        }
+        var state = new TwoDotsState_1.TwoDots.TwoDotsState();
+        state.mode = 'home';
+        return state;
     },
     needsShuffling: function () {
         var thisFlatArray = this.thisArray();
@@ -19270,8 +19271,13 @@ var Hello = React.createClass({displayName: "Hello",
         newState.mode = 'board';
         this.setState(newState);
     },
-    levelSelected: function () {
+    selectLevel: function () {
         this.state.mode = 'selectLevel';
+        this.setState(this.state);
+    },
+    levelSelected: function (level) {
+        this.state = levels_1.Levels.levels[level];
+        this.state.mode = 'board';
         this.setState(this.state);
     },
     render: function () {
@@ -19300,44 +19306,50 @@ var Hello = React.createClass({displayName: "Hello",
                 );
         }
         if (this.state.mode.indexOf('board') > -1) {
-            body = React.createElement("div", null, 
-                    React.createElement("button", {onClick: this.ShowLevelEditor, className: "btn btn-info"}, "Level editor"), 
+            body =
+                React.createElement("div", {className: "main"}, 
+                        React.createElement("img", {src: "images/Playground%20bkg.png"}), 
+                            React.createElement("div", {className: "backbutton"}), 
+                            React.createElement("div", null, 
+
                         React.createElement(scoreTable_1.default, {turns: state.turns, maxTurns: state.Rules.maxTurns, rules: state.Rules, score: state.score}), 
 
                     React.createElement("table", {className: "mainGrid", onMouseLeave: this.onMouseLeave}, 
                         React.createElement("tbody", null, 
                             Array.apply(0, Array(state.height)).map(function (el, row) {
-                return React.createElement("tr", {className: "border", key: row}, 
+                    return React.createElement("tr", {className: "border", key: row}, 
 
                                 Array.apply(0, Array(state.width)).map(function (el1, coll) {
-                    return React.createElement("td", {key: coll, className: _this.path.filter(function (cell) {
-                        return (cell.x == coll && cell.y == row)
-                            || (isLoop && state.Grid[row][coll].color == lastColor);
-                    }).length == 0
-                        ? 'unselected' : 'selected', onMouseUp: _this.handleMouseUp, onMouseOver: _this.handleMouseOver.bind(null, row, coll, event), onMouseDown: _this.handleMouseDown.bind(null, row, coll)}, 
+                        return React.createElement("td", {key: coll, className: _this.path.filter(function (cell) {
+                            return (cell.x == coll && cell.y == row)
+                                || (isLoop && state.Grid[row][coll].color == lastColor);
+                        }).length == 0
+                            ? 'unselected' : 'selected', onMouseUp: _this.handleMouseUp, onMouseOver: _this.handleMouseOver.bind(null, row, coll, event), onMouseDown: _this.handleMouseDown.bind(null, row, coll)}, 
 
                                     React.createElement("div", {className: state.Grid[row][coll].color + ' cell'})
                                 );
-                })
+                    })
                             );
-            })
+                })
                         )
                     ), 
                     message
-                );
+                ), 
+                        React.createElement(turnsLeft_1.default, {turns: state.turns, maxTurns: state.Rules.maxTurns, rules: state.Rules, score: state.score})
+                    );
         }
         if (this.state.mode.indexOf('selectLevel') > -1) {
-            body = React.createElement(selectLevel_1.SelectLevel, null);
+            body = React.createElement(selectLevel_1.SelectLevel, {levelSelected: this.levelSelected});
         }
-        else {
-            body = React.createElement(home_1.Home, {selectLevel: this.levelSelected, selectEditor: this.ShowLevelEditor});
+        if (this.state.mode.indexOf('home') > -1) {
+            body = React.createElement(home_1.Home, {selectLevel: this.selectLevel, selectEditor: this.ShowLevelEditor});
         }
         return body;
     }
 });
 ReactDOM.render(React.createElement(Hello, {name: "World", width: "3", height: "3"}), document.getElementById('container'));
 
-},{"./TwoDotsState":159,"./home":161,"./levelEditor":162,"./scoreTable":163,"./selectLevel":164,"react":158,"react-dom":2}],161:[function(require,module,exports){
+},{"./TwoDotsState":159,"./home":161,"./levelEditor":162,"./levels":163,"./scoreTable":164,"./selectLevel":165,"./turnsLeft":166,"react":158,"react-dom":2}],161:[function(require,module,exports){
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -19482,6 +19494,33 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = LevelEditor;
 
 },{"./TwoDotsState":159,"react":158}],163:[function(require,module,exports){
+var Levels;
+(function (Levels) {
+    var level1 = {
+        "width": 2,
+        "height": 6,
+        "Rules": { "maxTurns": 10, "amountToCollect": { "red": 3, "yellow": 6, "blue": 4 } },
+        "mode": "board",
+        "Grid": [[{ "color": "blue", "x": 0, "y": 0 }, { "color": "blue", "x": 1, "y": 0 }], [{
+                    "color": "brown",
+                    "x": 0,
+                    "y": 1
+                }, { "color": "blue", "x": 1, "y": 1 }], [{ "color": "blue", "x": 0, "y": 2 }, {
+                    "color": "brown",
+                    "x": 1,
+                    "y": 2
+                }], [{ "color": "blue", "x": 0, "y": 3 }, { "color": "yellow", "x": 1, "y": 3 }], [{
+                    "color": "yellow",
+                    "x": 0,
+                    "y": 4
+                }, { "color": "blue", "x": 1, "y": 4 }], [{ "color": "red", "x": 0, "y": 5 }, { "color": "blue", "x": 1, "y": 5 }]],
+        "turns": 0,
+        "score": { "red": 0, "yellow": 0, "brown": 0, "blue": 0, "green": 0 }
+    };
+    Levels.levels = [level1];
+})(Levels = exports.Levels || (exports.Levels = {}));
+
+},{}],164:[function(require,module,exports){
 /**
  * Created by taraskovtun on 1/29/16.
  */
@@ -19503,24 +19542,42 @@ var ScoreTable = (function (_super) {
         var turns = this.props.turns;
         var maxTurns = this.props.maxTurns;
         var cells = [];
+        var colors = [];
         Object.keys(rules.amountToCollect).map(function (key) {
             //var short = key + " short"
             var key2 = key + "value";
-            cells.push(React.createElement("td", {className: "short", key: key}, React.createElement("div", {className: key + ' cell'})));
             cells.push(React.createElement("td", {className: 'short2 ' + (score[key] >= rules.amountToCollect[key] ? 'completedColor' : ''), key: key2}, score[key] + ' / ' +
                 rules.amountToCollect[key]));
+            colors.push(React.createElement("td", {key: key}, 
+                React.createElement("svg", {height: "20", width: "20"}, 
+                    React.createElement("circle", {cx: "10", cy: "10", r: "10", stroke: "black", strokeWidth: "0", fill: key})
+                )
+            ));
         });
-        cells.push(React.createElement("td", {className: "short3", key: "turns"}, " ", 'Turns ' + turns + ' / ' + maxTurns, " "));
-        return (React.createElement("table", {className: "scoreTable"}, React.createElement("tbody", null, React.createElement("tr", null, 
-                cells
-                ))));
+        //cells.push(<td className="short3"  key='turns'> {'Turns ' + turns + ' / ' + maxTurns} </td>)
+        return (React.createElement("div", {className: "score"}, 
+
+
+            React.createElement("table", null, 
+                React.createElement("tbody", null, 
+                React.createElement("tr", null, 
+                    cells
+                ), 
+                React.createElement("tr", null, 
+                    colors
+
+                )
+                )
+            )
+
+            ));
     };
     return ScoreTable;
 })(React.Component);
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = ScoreTable;
 
-},{"react":158}],164:[function(require,module,exports){
+},{"react":158}],165:[function(require,module,exports){
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -19529,9 +19586,13 @@ var __extends = (this && this.__extends) || function (d, b) {
 var React = require('react');
 var SelectLevel = (function (_super) {
     __extends(SelectLevel, _super);
-    function SelectLevel() {
-        _super.apply(this, arguments);
+    function SelectLevel(props) {
+        _super.call(this, props);
+        this.levelSelected = this.levelSelected.bind(this);
     }
+    SelectLevel.prototype.levelSelected = function (level) {
+        this.props.levelSelected(level);
+    };
     SelectLevel.prototype.render = function () {
         return React.createElement("div", {className: "main"}, 
             React.createElement("img", {src: "images/exportlevelbkg.png"}), 
@@ -19541,7 +19602,7 @@ var SelectLevel = (function (_super) {
                         React.createElement("tbody", null, 
                         React.createElement("tr", null, 
                             React.createElement("td", null, 
-                                React.createElement("div", {className: "level"}, 
+                                React.createElement("div", {onClick: this.levelSelected.bind(this, 0), className: "level"}, 
                                     React.createElement("svg", null, 
                                         React.createElement("circle", {cx: "26", cy: "26", r: "24", stroke: "white", strokeWidth: "4", fill: "transparent"}), 
                                         React.createElement("text", {x: "26", y: "32", fill: "white", fontFamily: "Verdana", textAnchor: "middle", "alignment-baseline": "middle", fontSize: "18px", "font-weight": "bold"}, "1"
@@ -19560,5 +19621,31 @@ var SelectLevel = (function (_super) {
 exports.SelectLevel = SelectLevel;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = SelectLevel;
+
+},{"react":158}],166:[function(require,module,exports){
+/**
+ * Created by taraskovtun on 1/29/16.
+ */
+/// <reference path='../typings/tsd.d.ts'/>
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var React = require('react');
+var TurnsLeft = (function (_super) {
+    __extends(TurnsLeft, _super);
+    function TurnsLeft() {
+        _super.apply(this, arguments);
+    }
+    TurnsLeft.prototype.render = function () {
+        var turns = this.props.turns;
+        var maxTurns = this.props.maxTurns;
+        return (React.createElement("div", {className: "turns"}, 'Turns ' + turns + ' / ' + maxTurns));
+    };
+    return TurnsLeft;
+})(React.Component);
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = TurnsLeft;
 
 },{"react":158}]},{},[160]);

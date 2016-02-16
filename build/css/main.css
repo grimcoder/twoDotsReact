@@ -97,9 +97,9 @@ div.levels div.levellocked p{
 
 div.score {
     position: absolute;
-    left: 51px;
+    left: 185px;
     top: 78px;
-    width: 273px;
+    transform: translateX(-50%);
     height: 48px;
 }
 

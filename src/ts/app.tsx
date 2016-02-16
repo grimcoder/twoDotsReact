@@ -35,10 +35,7 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
 
         getInitialState: function () {
             return new TwoDots.TwoDotsState(Number(this.props.width), Number(this.props.height));
-            while (this.needsShuffling()){
 
-                this.shuffleBoard();
-            }
         },
 
         needsShuffling: function () {

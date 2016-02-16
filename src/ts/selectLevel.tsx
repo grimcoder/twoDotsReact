@@ -3,6 +3,17 @@ import * as ReactDOM from 'react-dom';
 
 
 export class SelectLevel extends React.Component<any, any> {
+    constructor(props){
+
+        super(props)
+        this.levelSelected = this.levelSelected.bind(this)
+
+    }
+
+    levelSelected(level) {
+        this.props.levelSelected(level)
+    }
+
     render() {
         return <div className="main">
             <img src="images/exportlevelbkg.png" />
@@ -12,7 +23,7 @@ export class SelectLevel extends React.Component<any, any> {
                         <tbody>
                         <tr>
                             <td>
-                                <div  className="level">
+                                <div onClick={this.levelSelected.bind(this, 0)} className="level">
                                     <svg>
                                         <circle cx="26" cy="26" r="24" stroke="white" strokeWidth="4" fill="transparent"/>
                                         <text x="26" y="32" fill="white" fontFamily="Verdana"  textAnchor="middle" alignment-baseline="middle"

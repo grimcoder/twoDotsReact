@@ -3,6 +3,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import ScoreTable from './scoreTable'
+import TurnsLeft from './turnsLeft'
 import LevelEditor from './levelEditor'
 import {Levels} from './levels'
 import  {Home} from './home'
@@ -37,11 +38,9 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
         path: [],
 
         getInitialState: function () {
-            return new TwoDots.TwoDotsState(Number(this.props.width), Number(this.props.height));
-            while (this.needsShuffling()){
-
-                this.shuffleBoard();
-            }
+            var state = new TwoDots.TwoDotsState()
+            state.mode = 'home'
+            return state;
         },
 
         needsShuffling: function () {
@@ -233,8 +232,15 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
             this.setState(newState);
         },
 
-        levelSelected: function(){
+        selectLevel: function(){
             this.state.mode = 'selectLevel'
+            this.setState(this.state);
+        },
+
+
+        levelSelected: function(level){
+            this.state = Levels.levels[level]
+            this.state.mode = 'board'
             this.setState(this.state);
         },
 
@@ -261,7 +267,6 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
                 </section>
             }
 
-
             if (this.state.mode.indexOf('editor') > -1) {
                 body =<div>
                     <button onClick={this.ShowBoard} className="btn btn-info">Show board</button>
@@ -271,8 +276,12 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
             }
 
             if (this.state.mode.indexOf('board') > -1) {
-                body =<div>
-                    <button onClick={this.ShowLevelEditor} className="btn btn-info">Level editor</button>
+                body =
+                    <div className="main">
+                        <img src="images/Playground%20bkg.png" />
+                            <div  className="backbutton"></div>
+                            <div>
+
                         <ScoreTable turns={state.turns} maxTurns={state.Rules.maxTurns} rules={state.Rules}
                                 score={state.score}/>
 
@@ -299,19 +308,20 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
                     </table>
                     {message}
                 </div>
-
+                        <TurnsLeft turns={state.turns} maxTurns={state.Rules.maxTurns} rules={state.Rules}
+                                    score={state.score}/>
+                    </div>
             }
-
 
 
             if (this.state.mode.indexOf('selectLevel') > -1) {
-                body = <SelectLevel  />
+                body = <SelectLevel levelSelected={this.levelSelected} />
             }
-            else  {
-                body = <Home selectLevel={this.levelSelected} selectEditor={this.ShowLevelEditor} />
+
+            if (this.state.mode.indexOf('home') > -1)  {
+                body = <Home selectLevel={this.selectLevel} selectEditor={this.ShowLevelEditor} />
             }
             return body
-
 
         }
 

@@ -19115,9 +19115,6 @@ var Hello = React.createClass({displayName: "Hello",
     path: [],
     getInitialState: function () {
         return new TwoDotsState_1.TwoDots.TwoDotsState(Number(this.props.width), Number(this.props.height));
-        while (this.needsShuffling()) {
-            this.shuffleBoard();
-        }
     },
     needsShuffling: function () {
         var thisFlatArray = this.thisArray();
@@ -19467,17 +19464,35 @@ var ScoreTable = (function (_super) {
         var turns = this.props.turns;
         var maxTurns = this.props.maxTurns;
         var cells = [];
+        var colors = [];
         Object.keys(rules.amountToCollect).map(function (key) {
             //var short = key + " short"
             var key2 = key + "value";
-            cells.push(React.createElement("td", {className: "short", key: key}, React.createElement("div", {className: key + ' cell'})));
             cells.push(React.createElement("td", {className: 'short2 ' + (score[key] >= rules.amountToCollect[key] ? 'completedColor' : ''), key: key2}, score[key] + ' / ' +
                 rules.amountToCollect[key]));
+            colors.push(React.createElement("td", {key: key}, 
+                React.createElement("svg", {height: "20", width: "20"}, 
+                    React.createElement("circle", {cx: "10", cy: "10", r: "10", stroke: "black", strokeWidth: "0", fill: key})
+                )
+            ));
         });
-        cells.push(React.createElement("td", {className: "short3", key: "turns"}, " ", 'Turns ' + turns + ' / ' + maxTurns, " "));
-        return (React.createElement("table", {className: "scoreTable"}, React.createElement("tbody", null, React.createElement("tr", null, 
-                cells
-                ))));
+        //cells.push(<td className="short3"  key='turns'> {'Turns ' + turns + ' / ' + maxTurns} </td>)
+        return (React.createElement("div", {className: "score"}, 
+
+
+            React.createElement("table", null, 
+                React.createElement("tbody", null, 
+                React.createElement("tr", null, 
+                    cells
+                ), 
+                React.createElement("tr", null, 
+                    colors
+
+                )
+                )
+            )
+
+            ));
     };
     return ScoreTable;
 })(React.Component);
