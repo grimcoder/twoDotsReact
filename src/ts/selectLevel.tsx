@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
+import {Levels} from './levels'
 
 export class SelectLevel extends React.Component<any, any> {
     constructor(props){
@@ -15,26 +16,35 @@ export class SelectLevel extends React.Component<any, any> {
     }
 
     render() {
+
+        var levels = []
+
+        for (var i in Levels.levels){
+
+            var x = 26 + i * 72
+
+            levels.push(
+                    <circle key={i} onClick={this.levelSelected.bind(this, i)} cx={x} cy="26" r="24" stroke="white" strokeWidth="4" fill="black" />
+            )
+
+            levels.push(
+                <text onClick={this.levelSelected.bind(this, i)}  x={x} y="32" key={'text' + i} fill="white" fontFamily="Verdana"  textAnchor="middle" alignment-baseline="middle"
+                      fontSize="18px" font-weight="bold">{Number(i) + 1}
+                </text>)
+
+
+
+        }
+
         return <div className="main">
             <img src="images/exportlevelbkg.png" />
                 <div  className="backbutton"></div>
                 <div className="levels">
-                    <table>
-                        <tbody>
-                        <tr>
-                            <td>
-                                <div onClick={this.levelSelected.bind(this, 0)} className="level">
-                                    <svg>
-                                        <circle cx="26" cy="26" r="24" stroke="white" strokeWidth="4" fill="transparent"/>
-                                        <text x="26" y="32" fill="white" fontFamily="Verdana"  textAnchor="middle" alignment-baseline="middle"
-                                              fontSize="18px" font-weight="bold">1
-                                        </text>
-                                    </svg>
-                                </div>
-                            </td>
 
-                        </tr></tbody>
-                    </table>
+                        <svg>
+                                {levels}
+                        </svg>
+
                 </div>
         </div>
     }

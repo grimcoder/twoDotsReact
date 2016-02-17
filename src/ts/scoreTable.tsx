@@ -5,6 +5,7 @@
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
+import {TwoDots} from './TwoDotsState'
 
 class ScoreTable extends React.Component<any, any> {
 
@@ -28,7 +29,7 @@ class ScoreTable extends React.Component<any, any> {
 
             colors.push(<td key={key}>
                 <svg  height="20" width="20">
-                    <circle cx="10" cy="10" r="10" stroke="black" strokeWidth="0" fill={key} />
+                    <circle cx="10" cy="10" r="10"  strokeWidth="0" fill={TwoDots.colorsTable[key]} />
                 </svg>
             </td>)
         })

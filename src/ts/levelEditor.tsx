@@ -26,7 +26,7 @@ export class LevelEditor extends React.Component<any, any> {
     changedcolorRules(){
 
         var colorLimit = this.refs['colorRules'].value
-
+        this.state.Rules.amountToCollect = {};
         TwoDots.colors.slice(0,Number(colorLimit)).map((color)=>{
             this.state.Rules.amountToCollect[color] = 5
         })

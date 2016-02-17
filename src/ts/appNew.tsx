@@ -33,7 +33,7 @@ interface HelloWorldProps {
     height: string;
 }
 
-var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
+var ConnectDots = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
     {
         path: [],
 
@@ -62,7 +62,6 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
             this.state.mode = 'board needsShuffling'
             this.setState(this.state)
             return true
-
         },
 
 
@@ -76,7 +75,6 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
                 }
             }
             this.setState(this.state)
-
             this.needsShuffling()
         },
 
@@ -87,7 +85,6 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
         removeDots: function (state:TwoDots.TwoDotsState):void {
 
             var selectedColor = this.path[0].color
-
             var thisColorArray = this.thisArray().filter((cell)=> {
                 return cell.color == selectedColor
             })
@@ -138,7 +135,7 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
             //have we lost?
             if (state.Rules.maxTurns < state.turns) {
                 this.state.mode = 'board message'
-                this.state.message = 'You lost!!!'
+                this.state.message = 'You lost!'
                 this.setState(this.state)
 
                 return
@@ -147,9 +144,17 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
             if (Object.keys(state.Rules.amountToCollect).filter((key:string, i:number) => {
                     return state.Rules.amountToCollect[key] > state.score[key]
                 }).length == 0) {
-                this.state.mode = 'board message'
-                this.state.message = 'You won!!!'
-                this.setState(this.state)
+                if (state.levelSolved < Levels.levels.length - 1) {
+                    this.state.levelSolved++
+                    this.state.mode = 'board message'
+                    this.state.message = 'Next level!!!'
+                    this.setState(this.state)
+                }
+                else {
+                    this.state.mode = 'board endOfGame'
+                    this.state.message = 'You won!!!'
+                    this.setState(this.state)
+                }
             }
         },
 
@@ -164,8 +169,6 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
             this.path = []
             this.setState(this.state);
             this.checkResults(this.state)
-
-
         },
 
         handleMouseOver: function (row, col) {
@@ -220,17 +223,17 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
             this.setState(this.state);
         },
 
-        updateLevel: function (newState:TwoDots.TwoDotsState) {
-
+        updateLevel: function (newState:TwoDots.TwoDotsState){
             newState.mode = 'board'
             this.setState(newState);
-
         },
 
         startNew: function () {
-            var newState:TwoDots.TwoDotsState = new TwoDots.TwoDotsState(Number(this.state.width), Number(this.state.height))
-            newState.mode = 'board'
-            this.setState(newState);
+            var level = this.state.levelSolved
+            this.state = TwoDots.makeCopy(Levels.levels[level])
+            this.state.mode = 'board'
+            this.state.levelSolved = level
+            this.setState(this.state);
         },
 
         selectLevel: function () {
@@ -239,33 +242,47 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
         },
 
 
+
         levelSelected: function (level) {
-            this.state = Levels.levels[level]
+
+            this.state = TwoDots.makeCopy(Levels.levels[level])
+            this.state.levelSolved = level
             this.state.mode = 'board'
             this.setState(this.state);
         },
 
-
         render: function () {
             var isLoop = this.isLoop()
             var lastColor = this.path.length > 0 ? this.path[this.path.length - 1].color : undefined
-
             var state:TwoDots.TwoDotsState = this.state
-
             var message
             var body
+            if (this.state.mode.indexOf('endOfGame') > -1) {
+                message = <div className="message">
+                    <div className="title">You won</div>
+                    <div className="button">
+                        <div onClick={this.selectLevel}>Start new</div>
+                    </div>
+                </div>
+            }
             if (this.state.mode.indexOf('message') > -1) {
-                message =<section>
-                    <h1>{this.state.message}</h1>
-                    <button className="btn btn-danger center" onClick={this.startNew}>Start new</button>
-                </section>
+                message = <div className="message">
+                    <div className="title">{this.state.message}</div>
+                    <div className="button">
+                        <div onClick={this.startNew}>Start new</div>
+                    </div>
+                </div>
+
+
             }
 
             if (this.state.mode.indexOf('needsShuffling') > -1) {
-                message =<section>
-                    <h1>Needs shuffling</h1>
-                    <button className="btn btn-danger center" onClick={this.shuffleBoard}>Shuffle</button>
-                </section>
+                message = <div className="message">
+                    <div className="title">Needs shuffling.</div>
+                    <div className="button">
+                        <div onClick={this.shuffleBoard}>SHUFFLE</div>
+                    </div>
+                </div>
             }
 
             if (this.state.mode.indexOf('editor') > -1) {
@@ -279,40 +296,63 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
             if (this.state.mode.indexOf('board') > -1) {
 
                 var circles = []
+                var path = []
                     Array.apply(0, Array(state.height)).map((el, row) =>{
                         Array.apply(0, Array(state.width)).map((el1, coll) => {
 
-                            circles.push(<circle  cx={10 + coll * 40} cy={10 + row * 40} r="10"
+                            var color = TwoDots.colorsTable[state.Grid[row][coll].color]
+
+                            color = (isLoop && TwoDots.colorsTable[lastColor] == color) ? TwoDots.colorsTable['grey'] : color
+
+                            circles.push(<circle key={'coll' + coll + 'row' + row}  cx={10 + coll * 40} cy={10 + row * 40} r="10"
                                             strokeWidth="0"
-                                            fill={state.Grid[row][coll].color} />)
+                                                 onMouseUp={this.handleMouseUp}
+                                                 onMouseOver={this.handleMouseOver.bind(null, row, coll, event)}
+                                                 onMouseDown={this.handleMouseDown.bind(null, row, coll)}
+                                            fill={color} />)
 
                         })}
                     )
 
-                body =
-                    <div className="main">
+                this.path.map((cell : TwoDots.Cell, i)=>{
+
+                    if (i >= this.path.length - 1 ) return
+                    var nextCell = this.path[i+1]
+
+                    var color = !isLoop ?  TwoDots.colorsTable[state.Grid[cell.y][cell.x].color] : TwoDots.colorsTable['grey']
+
+                    var X1 = 10 + 40 * cell.x
+                    var X2 = 10 + 40 * nextCell.x
+                    var Y1 = 10 + 40 * cell.y
+                    var Y2 = 10 + 40 * nextCell.y
+
+                    path.push(<path strokeWidth="5" key={i} stroke={color} d={'M ' + X1 + ' ' + Y1
+                    + ' L ' + X2 + ' ' + Y2 } />)
+
+
+                })
+
+                var svgWidth = 40 * state.Grid[0].length - 20
+                var svgHeight = 40 * state.Grid.length - 20
+
+                body = <div className="main">
                         <img src="images/Playground%20bkg.png"/>
-                        <div className="backbutton"></div>
+                        <div className="backbutton" onClick={this.selectLevel}></div>
                         <div>
-
                             <ScoreTable turns={state.turns} maxTurns={state.Rules.maxTurns} rules={state.Rules}
-                                        score={state.score}/>
-
+                                        score={state.score} />
                             <div className="grid">
-                                <svg height="400" width="60">
-
+                                <svg height={svgHeight} width={svgWidth}>
+                                    {path}
                                     {circles}
-
                                 </svg>
                             </div>
-
                             {message}
                         </div>
                         <TurnsLeft turns={state.turns} maxTurns={state.Rules.maxTurns} rules={state.Rules}
                                    score={state.score}/>
                     </div>
             }
-
 
             if (this.state.mode.indexOf('selectLevel') > -1) {
                 body = <SelectLevel levelSelected={this.levelSelected}/>
@@ -321,6 +361,7 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
             if (this.state.mode.indexOf('home') > -1) {
                 body = <Home selectLevel={this.selectLevel} selectEditor={this.ShowLevelEditor}/>
             }
+
             return body
 
         }
@@ -328,7 +369,7 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
     });
 
 ReactDOM.render(
-    <Hello name="World" width="3" height="3"/>,
+    <ConnectDots name="World" width="3" height="3"/>,
     document.getElementById('container')
 );
 

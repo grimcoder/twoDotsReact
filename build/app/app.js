@@ -19043,6 +19043,11 @@ var TwoDots;
         return colors[getRandomInt(0, colors.length)];
     };
     TwoDots.colors = ['red', 'yellow', 'brown', 'blue', 'green'];
+    TwoDots.colorsTable = { red: 'red', yellow: 'yellow', brown: 'orange', blue: '#4A90E2', green: 'green', grey: 'grey' };
+    function makeCopy(obj) {
+        return JSON.parse(JSON.stringify(obj));
+    }
+    TwoDots.makeCopy = makeCopy;
     function shuffleArray(array) {
         for (var i = array.length - 1; i > 0; i--) {
             var j = Math.floor(Math.random() * (i + 1));
@@ -19077,6 +19082,7 @@ var TwoDots;
             if (height === void 0) { height = 5; }
             this.width = width;
             this.height = height;
+            this.levelSolved = 0;
             this.Rules = new Rules();
             this.mode = 'board';
             this.Grid = [];
@@ -19349,6 +19355,7 @@ var LevelEditor = (function (_super) {
     LevelEditor.prototype.changedcolorRules = function () {
         var _this = this;
         var colorLimit = this.refs['colorRules'].value;
+        this.state.Rules.amountToCollect = {};
         TwoDotsState_1.TwoDots.colors.slice(0, Number(colorLimit)).map(function (color) {
             _this.state.Rules.amountToCollect[color] = 5;
         });
@@ -19453,6 +19460,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var React = require('react');
+var TwoDotsState_1 = require('./TwoDotsState');
 var ScoreTable = (function (_super) {
     __extends(ScoreTable, _super);
     function ScoreTable() {
@@ -19472,7 +19480,7 @@ var ScoreTable = (function (_super) {
                 rules.amountToCollect[key]));
             colors.push(React.createElement("td", {key: key}, 
                 React.createElement("svg", {height: "20", width: "20"}, 
-                    React.createElement("circle", {cx: "10", cy: "10", r: "10", stroke: "black", strokeWidth: "0", fill: key})
+                    React.createElement("circle", {cx: "10", cy: "10", r: "10", strokeWidth: "0", fill: TwoDotsState_1.TwoDots.colorsTable[key]})
                 )
             ));
         });
@@ -19499,4 +19507,4 @@ var ScoreTable = (function (_super) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = ScoreTable;
 
-},{"react":158}]},{},[160]);
+},{"./TwoDotsState":159,"react":158}]},{},[160]);

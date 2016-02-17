@@ -14,6 +14,13 @@ export module TwoDots {
 
     export var colors:[string] = ['red', 'yellow', 'brown', 'blue', 'green']
 
+    export var colorsTable:{[key:string]: string} = {red : 'red', yellow: 'yellow', brown:'orange', blue: '#4A90E2', green:'green', grey : 'grey'}
+
+
+    export function makeCopy(obj){
+        return JSON.parse(JSON.stringify(obj))
+    }
+
     export function shuffleArray(array) {
         for (var i = array.length - 1; i > 0; i--) {
             var j = Math.floor(Math.random() * (i + 1));
@@ -41,6 +48,7 @@ export module TwoDots {
     }
 
     export class TwoDotsState {
+        levelSolved: number = 0
         Rules:Rules = new Rules()
         mode: string = 'board'
         Grid:Cell[][] = []
