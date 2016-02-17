@@ -8,13 +8,16 @@ export class SelectLevel extends React.Component<any, any> {
 
         super(props)
         this.levelSelected = this.levelSelected.bind(this)
+        this.goHome = this.goHome.bind(this)
 
     }
 
     levelSelected(level) {
         this.props.levelSelected(level)
     }
-
+    goHome(){
+        this.props.sendHome()
+    }
     render() {
 
         var levels = []
@@ -38,7 +41,7 @@ export class SelectLevel extends React.Component<any, any> {
 
         return <div className="main">
             <img src="images/exportlevelbkg.png" />
-                <div  className="backbutton"></div>
+                <div  className="backbutton" onClick={this.goHome}></div>
                 <div className="levels">
 
                         <svg>

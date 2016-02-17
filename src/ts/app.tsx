@@ -205,10 +205,12 @@ var Hello = React.createClass<HelloWorldProps, TwoDots.TwoDotsState> (
             this.path.push(this.state.Grid[row][col])
             this.setState(this.state);
         },
+
         ShowLevelEditor: function () {
             this.state.mode = 'editor'
             this.setState(this.state);
         },
+
         ShowBoard: function () {
             this.state.mode = 'board'
             this.setState(this.state);

@@ -42,7 +42,11 @@ var ConnectDots = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
             state.mode = 'home'
             return state;
         },
-
+        goHome: function(){
+            this.state = new TwoDots.TwoDotsState()
+            this.state.mode = 'home'
+            this.setState(this.state)
+        },
         needsShuffling: function () {
             var thisFlatArray:[TwoDots.Cell] = this.thisArray();
 
@@ -355,7 +359,7 @@ var ConnectDots = React.createClass<HelloWorldProps, TwoDots.TwoDotsState>(
             }
 
             if (this.state.mode.indexOf('selectLevel') > -1) {
-                body = <SelectLevel levelSelected={this.levelSelected}/>
+                body = <SelectLevel sendHome={this.goHome} levelSelected={this.levelSelected}/>
             }
 
             if (this.state.mode.indexOf('home') > -1) {
